@@ -353,50 +353,86 @@
        RESPONSIVE — MOBILE (≤ 768px)
        ═══════════════════════════════════════════════════════════ */
     @media (max-width: 768px) {
-        .brand { top: 14px; left: 16px; padding-top: env(safe-area-inset-top, 0px); }
-        .brand-text { font-size: 11px; letter-spacing: 3px; }
+        .brand { top: 12px; left: 14px; padding-top: env(safe-area-inset-top, 0px); }
+        .brand-text { font-size: 10px; letter-spacing: 2.5px; }
         .brand-sub { display: none; }
 
-        .panel-handle { display: block; }
+        .panel-handle { display: block; margin: 8px auto 0; }
+
         .panel {
-            position: fixed;
-            top: auto; right: 0; left: 0; bottom: 0;
-            width: 100%;
-            max-height: 52vh;
-            border-radius: 16px 16px 0 0;
+            position: fixed !important;
+            top: auto !important;
+            right: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: auto;
+            max-height: 42vh;
+            border-radius: 14px 14px 0 0;
             border-bottom: none;
             padding-bottom: var(--safe-b);
         }
-        .tabs { padding: 8px 16px 0; }
-        .tab { padding: 11px 0 13px; min-height: 44px; }
-        .panel-scroll { padding: 0 16px 16px; }
 
-        /* Steps become horizontal chips */
-        .steps { margin: 16px 0 14px; }
-        .step-dot { width: 8px; height: 8px; }
-        .step-label { font-size: 8px; }
-        .steps-line { top: 4px; }
-
-        .sec-head { margin-bottom: 14px; }
-        .sec-title { font-size: 14px; }
-        .btn-x { width: 36px; height: 36px; min-width: 44px; min-height: 44px; }
-
-        /* Colors: 3 columns, compact */
-        .colors {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            margin-bottom: 16px;
+        .tabs { padding: 4px 14px 0; }
+        .tab {
+            padding: 8px 0 10px;
+            min-height: 36px;
+            font-size: 9px;
+            letter-spacing: 1.5px;
         }
-        .color { padding: 10px 6px 8px; }
-        .color-circle { width: 32px; height: 32px; }
-        .color-name { font-size: 8px; }
 
-        .btn-primary { padding: 15px; min-height: 48px; font-size: 11px; }
+        .panel-scroll { padding: 0 14px 14px; }
 
-        /* Animations: 2 columns, compact */
-        .anim-grid { gap: 6px; }
-        .anim-card { padding: 16px 10px; font-size: 10px; }
-        .anim-icon { width: 24px; height: 24px; font-size: 10px; }
+        /* Hide step dots on mobile — save vertical space */
+        .steps { display: none; }
+
+        .sec-head { margin-bottom: 10px; }
+        .sec-title { font-size: 12px; }
+        .sec-count { font-size: 9px; }
+        .btn-x {
+            width: 28px; height: 28px;
+            min-width: 36px; min-height: 36px;
+            font-size: 10px;
+        }
+
+        /* Colors: compact inline row */
+        .colors {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .color {
+            padding: 6px 6px 4px;
+            gap: 4px;
+            flex: 0 0 auto;
+            min-width: 54px;
+        }
+        .color-circle { width: 28px; height: 28px; }
+        .color-name { font-size: 7px; letter-spacing: 0; }
+        .color.on .color-circle::after { font-size: 10px; }
+
+        .btn-primary {
+            padding: 12px;
+            min-height: 40px;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            border-radius: 8px;
+        }
+
+        /* Animations: 3 columns, tiny cards */
+        .anim-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .anim-card {
+            padding: 10px 6px;
+            font-size: 8px;
+            gap: 4px;
+            border-radius: 8px;
+        }
+        .anim-icon { width: 20px; height: 20px; font-size: 9px; }
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -404,25 +440,28 @@
        ═══════════════════════════════════════════════════════════ */
     @media (max-width: 768px) and (orientation: landscape) {
         .panel {
-            left: auto; right: 0; width: 48%;
+            left: auto !important;
+            right: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: 44% !important;
             max-height: 100vh;
-            border-radius: 16px 0 0 16px;
-            bottom: 0; top: 0;
+            border-radius: 14px 0 0 14px;
         }
         .panel-handle { display: none; }
-        .brand { top: 8px; left: 12px; }
+        .brand { top: 6px; left: 10px; }
     }
 
     /* ═══════════════════════════════════════════════════════════
        RESPONSIVE — SMALL PHONES (≤ 390px / iPhone SE)
        ═══════════════════════════════════════════════════════════ */
     @media (max-width: 390px) {
-        .panel { max-height: 56vh; }
-        .colors { grid-template-columns: repeat(3, 1fr); gap: 4px; }
-        .color { padding: 8px 4px 6px; }
-        .color-circle { width: 28px; height: 28px; }
-        .anim-grid { grid-template-columns: 1fr 1fr; gap: 4px; }
-        .anim-card { padding: 14px 8px; }
+        .panel { max-height: 44vh; }
+        .color { min-width: 48px; padding: 5px 4px 3px; }
+        .color-circle { width: 24px; height: 24px; }
+        .color-name { font-size: 6.5px; }
+        .anim-card { padding: 8px 4px; font-size: 7px; }
+        .anim-icon { width: 18px; height: 18px; font-size: 8px; }
     }
 
     /* ═══════════════════════════════════════════════════════════
