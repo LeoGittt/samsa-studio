@@ -7,455 +7,289 @@
     <meta name="description" content="Customize your premium suitcase in 3D.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://distcdn.unlimited3d.com">
+    <link rel="preconnect" href="https://dist.unlimited3d.com">
+    <link rel="dns-prefetch" href="https://distcdn.unlimited3d.com">
+    <link rel="dns-prefetch" href="https://dist.unlimited3d.com">
+    <link rel="preload" href="https://distcdn.unlimited3d.com/pres/v/2.10.0/unlimited3d.min.js" as="script">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
     /* ═══════════════════════════════════════════════════════
-       DESIGN TOKENS — Luxury Dark
+       DESIGN SYSTEM — 4px grid, luxury dark
        ═══════════════════════════════════════════════════════ */
     :root {
         --bg: #000;
-        --panel: rgba(10,10,10,0.82);
-        --surf-1: rgba(255,255,255,0.028);
-        --surf-2: rgba(255,255,255,0.05);
-        --surf-3: rgba(255,255,255,0.08);
-        --surf-4: rgba(255,255,255,0.12);
-        --stroke-1: rgba(255,255,255,0.05);
-        --stroke-2: rgba(255,255,255,0.10);
-        --stroke-3: rgba(255,255,255,0.18);
-        --t1: rgba(255,255,255,0.93);
-        --t2: rgba(255,255,255,0.48);
-        --t3: rgba(255,255,255,0.24);
-        --accent: #fff;
-        --ease: cubic-bezier(0.22,1,0.36,1);
-        --spring: cubic-bezier(0.34,1.56,0.64,1);
-        --dur: 0.3s;
+        --panel: rgba(8,8,8,0.78);
+        --s1: rgba(255,255,255,0.025);
+        --s2: rgba(255,255,255,0.045);
+        --s3: rgba(255,255,255,0.07);
+        --s4: rgba(255,255,255,0.11);
+        --b1: rgba(255,255,255,0.04);
+        --b2: rgba(255,255,255,0.09);
+        --b3: rgba(255,255,255,0.16);
+        --t1: rgba(255,255,255,0.92);
+        --t2: rgba(255,255,255,0.45);
+        --t3: rgba(255,255,255,0.22);
+        --e: cubic-bezier(0.22,1,0.36,1);
+        --es: cubic-bezier(0.34,1.56,0.64,1);
+        --d: 0.28s;
     }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    button{font-family:inherit;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
 
     /* ═══════════════════════════════════════════════════════
-       RESET
+       LOADER — progress bar style
        ═══════════════════════════════════════════════════════ */
-    *,*::before,*::after { margin:0;padding:0;box-sizing:border-box }
-    html, body {
-        width:100%;height:100%;
-        background:var(--bg);color:var(--t1);
-        font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-        font-size:13px;line-height:1.5;
-        overflow:hidden;
-        -webkit-font-smoothing:antialiased;
-        -moz-osx-font-smoothing:grayscale;
-    }
-    button {
-        font-family:inherit;cursor:pointer;outline:none;
-        -webkit-tap-highlight-color:transparent;
-    }
-    button:focus-visible { box-shadow:0 0 0 2px rgba(255,255,255,0.3) }
-
-    /* ═══════════════════════════════════════════════════════
-       LOADER
-       ═══════════════════════════════════════════════════════ */
-    .loader {
-        position:fixed;inset:0;z-index:9999;
-        background:var(--bg);
-        display:flex;flex-direction:column;
-        align-items:center;justify-content:center;gap:20px;
-        transition:opacity .6s ease,visibility .6s ease;
-    }
-    .loader.hide { opacity:0;visibility:hidden;pointer-events:none }
-    .ld-ring {
-        width:28px;height:28px;
-        border:1.5px solid rgba(255,255,255,.05);
-        border-top-color:rgba(255,255,255,.4);
-        border-radius:50%;
-        animation:spin .75s linear infinite;
-    }
-    @keyframes spin { to { transform:rotate(360deg) } }
-    .ld-text {
-        font-size:8px;font-weight:600;
-        letter-spacing:6px;text-transform:uppercase;
-        color:var(--t3);
-    }
+    .loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .5s,visibility .5s}
+    .loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .ld-t{font-size:8px;font-weight:600;letter-spacing:6px;text-transform:uppercase;color:var(--t3)}
+    .ld-bw{width:100px;height:1.5px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+    .ld-b{height:100%;width:0%;background:rgba(255,255,255,.35);border-radius:2px;animation:lp 2.5s var(--e) forwards}
+    @keyframes lp{0%{width:0}30%{width:55%}60%{width:72%}85%{width:88%}100%{width:93%}}
+    .loader.hide .ld-b{width:100%;transition:width .15s}
 
     /* ═══════════════════════════════════════════════════════
        VIEWPORT
        ═══════════════════════════════════════════════════════ */
-    #container3d_replace { position:fixed;inset:0;width:100%;height:100% }
+    #container3d_replace{position:fixed;inset:0;width:100%;height:100%}
 
     /* ═══════════════════════════════════════════════════════
-       UI LAYER
+       UI SHELL
        ═══════════════════════════════════════════════════════ */
-    .ui { position:fixed;inset:0;z-index:10;pointer-events:none }
-
-    .brand {
-        position:absolute;top:24px;left:28px;
-        pointer-events:auto;user-select:none;
-    }
-    .brand-name {
-        font-weight:700;font-size:11px;
-        letter-spacing:4px;text-transform:uppercase;
-        color:var(--t1);
-    }
-    .brand-sub {
-        font-size:8.5px;font-weight:400;
-        letter-spacing:1.5px;color:var(--t3);margin-top:2px;
-    }
+    .ui{position:fixed;inset:0;z-index:10;pointer-events:none}
+    .brand{position:absolute;top:24px;left:28px;pointer-events:auto;user-select:none}
+    .brand b{display:block;font-weight:700;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--t1)}
+    .brand small{display:block;font-size:8px;font-weight:400;letter-spacing:1.5px;color:var(--t3);margin-top:3px}
 
     /* ═══════════════════════════════════════════════════════
        PANEL
        ═══════════════════════════════════════════════════════ */
-    .panel {
+    .panel{
         pointer-events:auto;
-        position:absolute;top:20px;right:20px;bottom:20px;
-        width:350px;
+        position:absolute;top:20px;right:20px;bottom:20px;width:344px;
         background:var(--panel);
-        backdrop-filter:blur(64px) saturate(1.6);
-        -webkit-backdrop-filter:blur(64px) saturate(1.6);
-        border:1px solid var(--stroke-1);
-        border-radius:16px;
-        display:flex;flex-direction:column;
-        overflow:hidden;
-        box-shadow:
-            0 0 0 1px rgba(255,255,255,0.02) inset,
-            0 1px 0 0 rgba(255,255,255,0.04) inset,
-            0 32px 64px rgba(0,0,0,0.5);
+        backdrop-filter:blur(72px) saturate(1.5);
+        -webkit-backdrop-filter:blur(72px) saturate(1.5);
+        border:1px solid var(--b1);border-radius:16px;
+        display:flex;flex-direction:column;overflow:hidden;
+        box-shadow:0 0 0 1px rgba(255,255,255,.015) inset,0 1px 0 rgba(255,255,255,.03) inset,0 40px 80px rgba(0,0,0,.55);
     }
-
-    .handle { display:none }
-
-    .scroller {
-        flex:1;overflow-y:auto;padding:0 22px 22px;
-        scrollbar-width:none;
-    }
-    .scroller::-webkit-scrollbar { display:none }
+    .handle{display:none}
+    .scroll{flex:1;overflow-y:auto;padding:0 20px 20px;scrollbar-width:none}
+    .scroll::-webkit-scrollbar{display:none}
 
     /* ═══════════════════════════════════════════════════════
-       TABS
+       TABS — underlined
        ═══════════════════════════════════════════════════════ */
-    .tabs {
-        display:flex;padding:16px 22px 0;
-        border-bottom:1px solid var(--stroke-1);
-        flex-shrink:0;
-    }
-    .tab {
-        flex:1;padding:11px 0 13px;
-        background:none;border:none;
-        font-size:10px;font-weight:600;
-        letter-spacing:2px;text-transform:uppercase;
-        color:var(--t3);
-        border-bottom:1.5px solid transparent;
-        margin-bottom:-1px;
-        transition:color var(--dur) var(--ease), border-color var(--dur) var(--ease);
-    }
-    .tab:hover { color:var(--t2) }
-    .tab.on { color:var(--t1);border-bottom-color:var(--accent) }
+    .tabs{display:flex;padding:16px 20px 0;border-bottom:1px solid var(--b1);flex-shrink:0}
+    .tab{flex:1;padding:12px 0;background:none;border:none;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);border-bottom:1.5px solid transparent;margin-bottom:-1px;transition:color var(--d) var(--e),border-color var(--d) var(--e)}
+    .tab:hover{color:var(--t2)}
+    .tab.on{color:var(--t1);border-bottom-color:#fff}
 
     /* ═══════════════════════════════════════════════════════
        CATEGORY PILLS
        ═══════════════════════════════════════════════════════ */
-    .cats { display:flex;gap:6px;margin:18px 0 16px }
-    .cat {
+    .cats{display:flex;gap:8px;margin:20px 0}
+    .cat{
         flex:1;padding:8px 0;
-        background:transparent;
-        border:1px solid var(--stroke-1);
-        border-radius:8px;
-        font-size:9px;font-weight:600;
-        letter-spacing:.8px;text-transform:uppercase;
+        background:transparent;border:1px solid var(--b1);border-radius:8px;
+        font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
         color:var(--t3);text-align:center;
-        transition:all var(--dur) var(--ease);
-        position:relative;overflow:hidden;
+        transition:all var(--d) var(--e);position:relative;overflow:hidden;
     }
-    .cat::before {
-        content:'';position:absolute;inset:0;
-        background:linear-gradient(180deg,rgba(255,255,255,0.04) 0%,transparent 100%);
-        opacity:0;transition:opacity var(--dur);
-    }
-    .cat:hover { border-color:var(--stroke-2);color:var(--t2) }
-    .cat:hover::before { opacity:1 }
-    .cat.on {
-        background:var(--surf-3);
-        border-color:var(--stroke-3);
-        color:var(--t1);
-    }
-    .cat.on::before { opacity:1 }
+    .cat::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;background:#fff;opacity:0;transition:opacity var(--d)}
+    .cat:hover{border-color:var(--b2);color:var(--t2)}
+    .cat.on{background:var(--s3);border-color:var(--b3);color:var(--t1)}
+    .cat.on::after{opacity:.6}
 
-    /* Section head */
-    .sec-h {
-        display:flex;align-items:center;
-        justify-content:space-between;
-        margin-bottom:16px;
-    }
-    .sec-title { font-size:15px;font-weight:600;color:var(--t1);letter-spacing:.15px }
-    .sec-count {
-        font-size:9px;font-weight:500;color:var(--t3);
-        margin-left:8px;letter-spacing:.4px;
-    }
-    .btn-x {
-        width:30px;height:30px;border-radius:50%;
-        background:var(--surf-1);border:1px solid var(--stroke-1);
-        color:var(--t3);font-size:11px;
-        display:grid;place-items:center;
-        transition:all var(--dur) var(--ease);
-    }
-    .btn-x:hover { background:var(--surf-2);border-color:var(--stroke-2);color:var(--t1) }
+    /* Section header */
+    .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .hd-title{font-size:16px;font-weight:600;color:var(--t1);letter-spacing:.2px}
+    .hd-sub{font-size:9px;font-weight:400;color:var(--t3);margin-left:8px}
+    .btn-x{width:28px;height:28px;border-radius:50%;background:var(--s1);border:1px solid var(--b1);color:var(--t3);font-size:10px;display:grid;place-items:center;transition:all var(--d) var(--e)}
+    .btn-x:hover{background:var(--s2);border-color:var(--b2);color:var(--t1)}
 
     /* ═══════════════════════════════════════════════════════
-       COLOR SWATCHES — Premium Metallic Design
+       COLOR SWATCHES — 3D metallic spheres
        ═══════════════════════════════════════════════════════ */
-    .colors {
-        display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:8px;
-        margin-bottom:20px;
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+    .sw{
+        display:flex;flex-direction:column;align-items:center;gap:8px;
+        padding:16px 8px 12px;border-radius:12px;
+        border:1px solid transparent;background:transparent;
+        transition:all var(--d) var(--e);
     }
-    .swatch {
-        display:flex;flex-direction:column;
-        align-items:center;gap:8px;
-        padding:14px 8px 12px;
-        border-radius:12px;
-        border:1px solid transparent;
-        background:transparent;
-        transition:all var(--dur) var(--ease);
-        position:relative;
-    }
-    .swatch:hover {
-        background:var(--surf-2);
-        border-color:var(--stroke-1);
-    }
-    .swatch.on {
-        background:var(--surf-3);
-        border-color:var(--stroke-3);
-    }
+    .sw:hover{background:var(--s2);border-color:var(--b1)}
+    .sw.on{background:rgba(255,255,255,.05);border-color:var(--b3)}
 
-    /* The color orb — metallic look */
-    .orb {
-        width:38px;height:38px;
-        border-radius:50%;
-        position:relative;
-        transition:transform var(--dur) var(--spring);
-        flex-shrink:0;
+    /* Orb: the metal sphere */
+    .orb{
+        width:40px;height:40px;border-radius:50%;position:relative;
+        transition:transform var(--d) var(--es);flex-shrink:0;
+        box-shadow:0 4px 12px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.25);
     }
-    /* Metallic highlight overlay */
-    .orb::before {
+    /* Top specular highlight — makes it look 3D */
+    .orb::before{
         content:'';position:absolute;
-        top:3px;left:6px;
-        width:60%;height:40%;
+        top:4px;left:8px;width:50%;height:35%;
         border-radius:50%;
-        background:linear-gradient(180deg,rgba(255,255,255,0.35) 0%,rgba(255,255,255,0) 100%);
-        opacity:0.6;
-        transition:opacity var(--dur);
+        background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.45),rgba(255,255,255,0) 70%);
+        opacity:.7;pointer-events:none;
     }
-    /* Ring for active state */
-    .orb::after {
-        content:'';position:absolute;
-        inset:-4px;border-radius:50%;
+    /* Selection ring */
+    .orb::after{
+        content:'';position:absolute;inset:-5px;border-radius:50%;
         border:2px solid transparent;
-        transition:all var(--dur) var(--ease);
+        transition:border-color var(--d) var(--e),box-shadow var(--d) var(--e);
     }
-    .swatch:hover .orb { transform:scale(1.06) }
-    .swatch.on .orb::after { border-color:rgba(255,255,255,0.6) }
+    .sw:hover .orb{transform:scale(1.08)}
+    .sw.on .orb::after{border-color:rgba(255,255,255,.55);box-shadow:0 0 16px rgba(255,255,255,.08)}
 
-    /* Checkmark */
-    .orb-check {
-        position:absolute;inset:0;
-        display:flex;align-items:center;justify-content:center;
-        font-size:13px;font-weight:700;color:#fff;
-        text-shadow:0 1px 3px rgba(0,0,0,0.5);
-        opacity:0;
-        transform:scale(0.5);
-        transition:all .25s var(--spring);
+    /* Checkmark — spring animated */
+    .chk{
+        position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+        opacity:0;transform:scale(.4) rotate(-15deg);
+        transition:all .3s var(--es);
     }
-    .swatch.on .orb-check { opacity:1;transform:scale(1) }
+    .chk svg{width:16px;height:16px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+    .sw.on .chk{opacity:1;transform:scale(1) rotate(0)}
 
-    .swatch-label {
-        font-size:9px;font-weight:500;
-        color:var(--t3);text-align:center;
-        letter-spacing:.2px;line-height:1.2;
-        transition:color var(--dur);
-    }
-    .swatch.on .swatch-label { color:var(--t1) }
+    .sw-lbl{font-size:9px;font-weight:500;color:var(--t3);text-align:center;letter-spacing:.3px;line-height:1.15;transition:color var(--d)}
+    .sw.on .sw-lbl{color:var(--t1);font-weight:600}
 
     /* ═══════════════════════════════════════════════════════
-       NEXT BUTTON
+       NEXT BUTTON — outline premium style
        ═══════════════════════════════════════════════════════ */
-    .btn-next {
-        width:100%;padding:13px;
-        background:var(--accent);color:#000;
-        border:none;border-radius:10px;
-        font-size:10px;font-weight:700;
-        letter-spacing:2px;text-transform:uppercase;
-        transition:all var(--dur) var(--ease);
-        position:relative;overflow:hidden;
+    .btn-go{
+        width:100%;padding:14px;
+        background:transparent;color:var(--t1);
+        border:1px solid var(--b2);border-radius:10px;
+        font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+        transition:all var(--d) var(--e);position:relative;overflow:hidden;
     }
-    .btn-next::before {
+    .btn-go::before{
         content:'';position:absolute;inset:0;
-        background:linear-gradient(180deg,rgba(255,255,255,0.15) 0%,transparent 50%);
+        background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+        transition:opacity var(--d);
     }
-    .btn-next:hover { opacity:.88 }
-    .btn-next:active { transform:scale(.97) }
+    .btn-go:hover{border-color:var(--b3);background:rgba(255,255,255,.04)}
+    .btn-go:active{transform:scale(.98)}
 
     /* ═══════════════════════════════════════════════════════
-       ANIMATIONS TAB
+       ANIMATIONS TAB — with SVG icons
        ═══════════════════════════════════════════════════════ */
-    .anim-list {
-        display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    .anims{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .an{
+        display:flex;align-items:center;gap:12px;
+        padding:14px 16px;
+        background:var(--s1);border:1px solid var(--b1);border-radius:10px;
+        font-size:11px;font-weight:500;color:var(--t2);text-align:left;
+        transition:all var(--d) var(--e);
     }
-    .anim-btn {
-        display:flex;align-items:center;gap:10px;
-        padding:14px 14px;
-        background:var(--surf-1);border:1px solid var(--stroke-1);
-        border-radius:10px;
-        font-size:11px;font-weight:500;color:var(--t2);
-        text-align:left;
-        transition:all var(--dur) var(--ease);
+    .an:hover{background:var(--s2);border-color:var(--b2);color:var(--t1);transform:translateY(-1px)}
+    .an:active{transform:scale(.97)}
+    .an-i{
+        width:28px;height:28px;border-radius:8px;
+        background:var(--s2);border:1px solid var(--b1);
+        display:grid;place-items:center;flex-shrink:0;
+        transition:all var(--d);
     }
-    .anim-btn:hover {
-        background:var(--surf-2);border-color:var(--stroke-2);
-        color:var(--t1);transform:translateY(-1px);
-    }
-    .anim-btn:active { transform:scale(.97) }
-    .anim-ico {
-        width:26px;height:26px;border-radius:50%;
-        background:var(--surf-2);border:1px solid var(--stroke-1);
-        display:grid;place-items:center;
-        font-size:12px;flex-shrink:0;
-        transition:all var(--dur);
-    }
-    .anim-btn:hover .anim-ico {
-        background:var(--surf-3);border-color:var(--stroke-2);
-    }
+    .an-i svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .an:hover .an-i{background:var(--s3);border-color:var(--b2)}
 
     /* ═══════════════════════════════════════════════════════
-       ANIMATIONS
+       FADE IN
        ═══════════════════════════════════════════════════════ */
-    @keyframes fadeIn {
-        from { opacity:0;transform:translateY(6px) }
-        to   { opacity:1;transform:translateY(0) }
-    }
-    .fi { animation:fadeIn .35s var(--ease) both }
+    @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .fi{animation:fi .3s var(--e) both}
 
     /* ═══════════════════════════════════════════════════════
-       TABLET (≤1100)
+       TABLET
        ═══════════════════════════════════════════════════════ */
-    @media(max-width:1100px){
-        .panel { width:320px;right:14px;top:14px;bottom:14px }
-    }
+    @media(max-width:1100px){.panel{width:320px;right:16px;top:16px;bottom:16px}}
 
     /* ═══════════════════════════════════════════════════════
-       ███ MOBILE (≤768) ███
+       ███ MOBILE ███
        ═══════════════════════════════════════════════════════ */
     @media(max-width:768px){
-        .brand { top:12px;left:14px;padding-top:env(safe-area-inset-top,0) }
-        .brand-name { font-size:10px;letter-spacing:2.5px }
-        .brand-sub { display:none }
+        .brand{top:12px;left:14px;padding-top:env(safe-area-inset-top,0)}
+        .brand b{font-size:10px;letter-spacing:2.5px}
+        .brand small{display:none}
 
-        /* Handle visible */
-        .handle {
-            display:flex;flex-direction:column;align-items:center;
-            width:100%;padding:8px 0 2px;
-            background:none;border:none;flex-shrink:0;
-        }
-        .handle-pill {
-            width:28px;height:3px;border-radius:2px;
-            background:rgba(255,255,255,.14);
-            transition:background .2s;
-        }
-        .handle:active .handle-pill { background:rgba(255,255,255,.35) }
-        .handle-hint {
-            font-size:8px;color:var(--t3);margin-top:2px;
-            transition:transform .3s var(--ease);line-height:1;
-        }
+        .handle{display:flex;flex-direction:column;align-items:center;width:100%;padding:8px 0 2px;background:none;border:none;flex-shrink:0}
+        .handle-pill{width:28px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);transition:background .2s}
+        .handle:active .handle-pill{background:rgba(255,255,255,.3)}
+        .handle-hint{font-size:8px;color:var(--t3);margin-top:2px;transition:transform .3s var(--e);line-height:1}
 
-        /* Panel → bottom sheet */
-        .panel {
-            position:fixed !important;
-            top:auto !important;right:0 !important;left:0 !important;bottom:0 !important;
-            width:100% !important;height:auto;
-            max-height:44vh;
-            border-radius:14px 14px 0 0;
-            border-bottom:none;
+        .panel{
+            position:fixed!important;top:auto!important;right:0!important;left:0!important;bottom:0!important;
+            width:100%!important;height:auto;max-height:44vh;
+            border-radius:14px 14px 0 0;border-bottom:none;
             padding-bottom:env(safe-area-inset-bottom,0);
-            transition:max-height .4s var(--ease);
-            box-shadow:0 -8px 32px rgba(0,0,0,.4);
+            transition:max-height .4s var(--e);
+            box-shadow:0 -8px 40px rgba(0,0,0,.5);
         }
+        .panel.min{max-height:36px;overflow:hidden}
+        .panel.min .tabs,.panel.min .scroll{opacity:0;visibility:hidden;pointer-events:none;position:absolute}
+        .panel.min .handle-hint{transform:rotate(180deg)}
 
-        /* Collapsed: just 36px handle */
-        .panel.min { max-height:36px;overflow:hidden }
-        .panel.min .tabs,
-        .panel.min .scroller { opacity:0;visibility:hidden;pointer-events:none;position:absolute }
-        .panel.min .handle-hint { transform:rotate(180deg) }
+        .tabs{padding:2px 14px 0}
+        .tab{padding:8px 0 10px;font-size:9px;letter-spacing:1.5px;min-height:34px}
+        .scroll{padding:0 14px 14px}
 
-        .tabs { padding:2px 14px 0 }
-        .tab { padding:8px 0 10px;font-size:9px;letter-spacing:1.5px;min-height:34px }
+        .cats{margin:12px 0;gap:4px}
+        .cat{padding:7px 0;font-size:8px;border-radius:6px;letter-spacing:.6px}
 
-        .scroller { padding:0 14px 14px }
+        .hd{margin-bottom:10px}
+        .hd-title{font-size:13px}
+        .hd-sub{font-size:8px}
+        .btn-x{width:26px;height:26px;font-size:9px}
 
-        .cats { margin:10px 0 10px;gap:4px }
-        .cat { padding:6px 0;font-size:8px;border-radius:6px }
+        .grid{gap:4px;margin-bottom:12px}
+        .sw{padding:8px 4px 6px;gap:5px;border-radius:8px}
+        .orb{width:30px;height:30px}
+        .orb::before{top:3px;left:5px}
+        .orb::after{inset:-4px}
+        .chk svg{width:12px;height:12px}
+        .sw-lbl{font-size:7.5px}
 
-        .sec-h { margin-bottom:8px }
-        .sec-title { font-size:12px }
-        .sec-count { font-size:8px }
-        .btn-x { width:26px;height:26px;font-size:9px }
+        .btn-go{padding:12px;font-size:9px;letter-spacing:1.5px;border-radius:8px}
 
-        /* Colors: compact */
-        .colors { gap:4px;margin-bottom:10px }
-        .swatch { padding:8px 4px 6px;gap:4px;border-radius:8px }
-        .orb { width:28px;height:28px }
-        .orb::before { top:2px;left:4px }
-        .orb::after { inset:-3px }
-        .orb-check { font-size:10px }
-        .swatch-label { font-size:7px }
-
-        .btn-next { padding:11px;font-size:9px;letter-spacing:1.5px;border-radius:7px }
-
-        /* Anims compact */
-        .anim-list { grid-template-columns:repeat(3,1fr);gap:4px }
-        .anim-btn { padding:10px 6px;font-size:8px;gap:6px;flex-direction:column;text-align:center;border-radius:8px }
-        .anim-ico { width:20px;height:20px;font-size:10px }
+        .anims{grid-template-columns:repeat(3,1fr);gap:4px}
+        .an{padding:10px 6px;font-size:8px;gap:5px;flex-direction:column;text-align:center;border-radius:8px}
+        .an-i{width:22px;height:22px;border-radius:6px}
+        .an-i svg{width:11px;height:11px}
     }
 
-    /* ═══════════════════════════════════════════════════════
-       MOBILE LANDSCAPE
-       ═══════════════════════════════════════════════════════ */
     @media(max-width:768px) and (orientation:landscape){
-        .panel {
-            left:auto !important;right:0 !important;top:0 !important;
-            width:42% !important;max-height:100vh;
-            border-radius:14px 0 0 14px;
-        }
-        .handle { display:none }
-        .panel.min { max-height:100vh }
-        .panel.min .tabs,.panel.min .scroller { opacity:1;visibility:visible;pointer-events:auto;position:static }
+        .panel{left:auto!important;right:0!important;top:0!important;width:42%!important;max-height:100vh;border-radius:14px 0 0 14px}
+        .handle{display:none}
+        .panel.min{max-height:100vh}
+        .panel.min .tabs,.panel.min .scroll{opacity:1;visibility:visible;pointer-events:auto;position:static}
     }
 
-    /* ═══════════════════════════════════════════════════════
-       TINY PHONES (≤390)
-       ═══════════════════════════════════════════════════════ */
     @media(max-width:390px){
-        .panel { max-height:46vh }
-        .orb { width:24px;height:24px }
-        .swatch-label { font-size:6.5px }
-        .anim-btn { padding:8px 4px;font-size:7px }
-        .anim-ico { width:18px;height:18px;font-size:9px }
+        .panel{max-height:46vh}
+        .orb{width:26px;height:26px}
+        .sw-lbl{font-size:6.5px}
+        .an{padding:8px 4px;font-size:7px}
+        .an-i{width:18px;height:18px}
     }
     </style>
 </head>
 <body>
 
-<!-- Loader -->
 <div class="loader" id="ld">
-    <div class="ld-ring"></div>
-    <span class="ld-text">Loading</span>
+    <span class="ld-t">Loading</span>
+    <div class="ld-bw"><div class="ld-b"></div></div>
 </div>
 
-<!-- 3D Viewport -->
 <div id="container3d_replace"></div>
 
-<!-- Interface -->
 <div class="ui">
-    <div class="brand">
-        <div class="brand-name">Samsa Studio</div>
-        <div class="brand-sub">Suitcase Configurator</div>
-    </div>
+    <div class="brand"><b>Samsa Studio</b><small>Suitcase Configurator</small></div>
 
     <div class="panel" id="pnl">
         <button class="handle" id="hnd" aria-label="Toggle panel">
@@ -468,341 +302,218 @@
             <button class="tab" data-tab="anm">Animations</button>
         </div>
 
-        <div class="scroller">
-            <!-- Configurator -->
+        <div class="scroll">
             <div id="v-cfg">
                 <div class="cats" id="cats"></div>
-                <div class="sec-h">
+                <div class="hd">
                     <div>
-                        <span class="sec-title" id="stitle">Body</span>
-                        <span class="sec-count" id="scount"></span>
+                        <span class="hd-title" id="htl">Body</span>
+                        <span class="hd-sub" id="hct"></span>
                     </div>
                     <button class="btn-x" id="bx" title="Reset camera">✕</button>
                 </div>
-                <div class="colors" id="cgrid"></div>
-                <button class="btn-next" id="bnext">Next Step →</button>
+                <div class="grid" id="cg"></div>
+                <button class="btn-go" id="bn">Next Step →</button>
             </div>
-
-            <!-- Animations -->
             <div id="v-anm" style="display:none">
-                <div class="sec-h" style="margin-top:14px">
-                    <span class="sec-title">Interactions</span>
-                </div>
-                <div class="anim-list" id="agrid"></div>
+                <div class="hd" style="margin-top:16px"><span class="hd-title">Interactions</span></div>
+                <div class="anims" id="ag"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- SDK + App -->
 <script src="https://distcdn.unlimited3d.com/pres/v/2.10.0/unlimited3d.min.js"></script>
 <script>
-var App = (function () {
-    'use strict';
+var App=(function(){'use strict';
 
-    /* ────────────────────────────────────────────────────
-       SDK CONFIG
-       ──────────────────────────────────────────────────── */
-    var SDK = Object.freeze({
-        distID: 'latest',
-        solution3DName: 'suitcase-color',
-        projectName: 'resources-for-videos-and-marketing-purposes',
-        solution3DID: '62766',
-        containerID: 'container3d_replace'
-    });
+/* ── SVG icons (inline, no external deps) ── */
+var ICO={
+    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    open:'<svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>',
+    close:'<svg viewBox="0 0 24 24"><path d="M17 7L7 17M7 17H16M7 17V8"/></svg>',
+    up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M12 5L5 12M12 5L19 12"/></svg>',
+    down:'<svg viewBox="0 0 24 24"><path d="M12 5V19M12 19L19 12M12 19L5 12"/></svg>',
+    spin:'<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-2.636-6.364"/><path d="M21 3v5h-5"/></svg>',
+    stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>'
+};
 
-    /* ────────────────────────────────────────────────────
-       PARTS (exact names from PDF)
-       ──────────────────────────────────────────────────── */
-    var PARTS = Object.freeze({
-        body:    ['Body_metal_base', 'Body_metal_cover'],
-        handles: ['Handle_base1', 'Handle_metal-1', 'Handle_telescope-1'],
-        corners: ['Corners_base', 'Corners_cover'],
-        wheels:  [
-            'Wheels_base', 'Wheels_base_cover',
-            'Wheels_front_right_base', 'Wheels_front_left_base',
-            'Wheels_back_right_base',  'Wheels_back_left_base',
-            'Wheels_front_right_center','Wheels_front_left_center',
-            'Wheels_back_right_center','Wheels_back_left_centar'
-        ]
-    });
+/* ── SDK ── */
+var SDK=Object.freeze({distID:'latest',solution3DName:'suitcase-color',projectName:'resources-for-videos-and-marketing-purposes',solution3DID:'62766',containerID:'container3d_replace'});
 
-    /** Fallback parent-group names */
-    var PARTS_FB = Object.freeze({
-        body: ['Body_Case'], handles: ['Handles'],
-        corners: ['Corners'], wheels: ['Wheels']
-    });
+/* ── Parts (pdf) ── */
+var P=Object.freeze({
+    body:['Body_metal_base','Body_metal_cover'],
+    handles:['Handle_base1','Handle_metal-1','Handle_telescope-1'],
+    corners:['Corners_base','Corners_cover'],
+    wheels:['Wheels_base','Wheels_base_cover','Wheels_front_right_base','Wheels_front_left_base','Wheels_back_right_base','Wheels_back_left_base','Wheels_front_right_center','Wheels_front_left_center','Wheels_back_right_center','Wheels_back_left_centar']
+});
+var PF=Object.freeze({body:['Body_Case'],handles:['Handles'],corners:['Corners'],wheels:['Wheels']});
 
-    /* ────────────────────────────────────────────────────
-       MATERIALS (exact names from PDF)
-       ──────────────────────────────────────────────────── */
-    var MAT_BODY = Object.freeze([
-        { k:'blue',      n:'01 CHROME SATIN ROYAL BLUE',     lbl:'Royal Blue',     bg:'linear-gradient(145deg,#1a3c8c,#5080e0)' },
-        { k:'green',     n:'02 CHROME SATIN OLIVE GREEN',    lbl:'Olive Green',    bg:'linear-gradient(145deg,#354d24,#6a9446)' },
-        { k:'orange',    n:'03 CHROME SATIN BURNT ORANGE',   lbl:'Burnt Orange',   bg:'linear-gradient(145deg,#8e3e0c,#e07020)' },
-        { k:'red',       n:'04 CHROME SATIN CHERRY RED',     lbl:'Cherry Red',     bg:'linear-gradient(145deg,#6c0e16,#c42030)' },
-        { k:'black',     n:'05 CHROME SATIN MIDNIGHT BLACK', lbl:'Midnight Black', bg:'linear-gradient(145deg,#0c0c0c,#282828)' },
-        { k:'aluminium', n:'06 CHROME SATIN ALUMINUM',       lbl:'Aluminium',      bg:'linear-gradient(145deg,#8a929a,#cdd2d8)' }
-    ]);
+/* ── Materials (pdf) ── */
+var MB=Object.freeze([
+    {k:'blue',n:'01 CHROME SATIN ROYAL BLUE',l:'Royal Blue',g:'radial-gradient(circle at 35% 30%,#6090e8,#1a3c8c 70%)'},
+    {k:'green',n:'02 CHROME SATIN OLIVE GREEN',l:'Olive Green',g:'radial-gradient(circle at 35% 30%,#7ca852,#354d24 70%)'},
+    {k:'orange',n:'03 CHROME SATIN BURNT ORANGE',l:'Burnt Orange',g:'radial-gradient(circle at 35% 30%,#ea8838,#8e3e0c 70%)'},
+    {k:'red',n:'04 CHROME SATIN CHERRY RED',l:'Cherry Red',g:'radial-gradient(circle at 35% 30%,#e04050,#6c0e16 70%)'},
+    {k:'black',n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 35% 30%,#3a3a3a,#0a0a0a 70%)'},
+    {k:'aluminium',n:'06 CHROME SATIN ALUMINUM',l:'Aluminium',g:'radial-gradient(circle at 35% 30%,#d4d8de,#848c96 70%)'}
+]);
+var MO=Object.freeze([
+    {k:'aluminium',n:'Chrome ALUMINIUM',l:'Aluminium',g:'radial-gradient(circle at 35% 30%,#d4d8de,#848c96 70%)'},
+    {k:'black',n:'Chrome MIDNIGHT BLACK',l:'Black',g:'radial-gradient(circle at 35% 30%,#3a3a3a,#0a0a0a 70%)'},
+    {k:'red',n:'Chrome CHERRY RED',l:'Red',g:'radial-gradient(circle at 35% 30%,#e04050,#6c0e16 70%)'},
+    {k:'blue',n:'Chrome ROYAL BLUE',l:'Blue',g:'radial-gradient(circle at 35% 30%,#6090e8,#1a3c8c 70%)'},
+    {k:'orange',n:'Chrome SATIN BURNT ORANGE',l:'Orange',g:'radial-gradient(circle at 35% 30%,#ea8838,#8e3e0c 70%)'},
+    {k:'green',n:'Chrome SATIN OLIVE GREEN',l:'Green',g:'radial-gradient(circle at 35% 30%,#7ca852,#354d24 70%)'}
+]);
 
-    var MAT_OTHER = Object.freeze([
-        { k:'aluminium', n:'Chrome ALUMINIUM',          lbl:'Aluminium', bg:'linear-gradient(145deg,#8a929a,#cdd2d8)' },
-        { k:'black',     n:'Chrome MIDNIGHT BLACK',     lbl:'Black',     bg:'linear-gradient(145deg,#0c0c0c,#282828)' },
-        { k:'red',       n:'Chrome CHERRY RED',         lbl:'Red',       bg:'linear-gradient(145deg,#6c0e16,#c42030)' },
-        { k:'blue',      n:'Chrome ROYAL BLUE',         lbl:'Blue',      bg:'linear-gradient(145deg,#1a3c8c,#5080e0)' },
-        { k:'orange',    n:'Chrome SATIN BURNT ORANGE', lbl:'Orange',    bg:'linear-gradient(145deg,#8e3e0c,#e07020)' },
-        { k:'green',     n:'Chrome SATIN OLIVE GREEN',  lbl:'Green',     bg:'linear-gradient(145deg,#354d24,#6a9446)' }
-    ]);
+/* ── Cameras (pdf) ── */
+var CM=Object.freeze({
+    body:{d:'camera_body',m:'camera_body_mobile'},
+    handles:{d:'camera_handle',m:'camera_handle_mobile'},
+    corners:{d:'camera_corners',m:'Camera_corners_mobile'},
+    wheels:{d:'camera_wheels',m:'camera_wheels_mobile'}
+});
 
-    /* ────────────────────────────────────────────────────
-       CAMERAS (exact names from PDF)
-       ──────────────────────────────────────────────────── */
-    var CAM = Object.freeze({
-        body:    { d:'camera_body',    m:'camera_body_mobile' },
-        handles: { d:'camera_handle',  m:'camera_handle_mobile' },
-        corners: { d:'camera_corners', m:'Camera_corners_mobile' },
-        wheels:  { d:'camera_wheels',  m:'camera_wheels_mobile' }
-    });
+/* ── Animations (pdf) ── */
+var AN=Object.freeze([
+    {l:'Open',m:'open',i:ICO.open},
+    {l:'Close',m:'close',i:ICO.close},
+    {l:'Extend Handle',m:'extend_handle',i:ICO.up},
+    {l:'Retract Handle',m:'retract_handle',i:ICO.down},
+    {l:'Spinner On',m:'wheel_spinner_on',i:ICO.spin},
+    {l:'Spinner Off',m:'wheel_spinner_off',i:ICO.stop}
+]);
 
-    /* ────────────────────────────────────────────────────
-       ANIMATIONS (exact modifier names from PDF)
-       ──────────────────────────────────────────────────── */
-    var ANIMS = Object.freeze([
-        { lbl:'Open',           mod:'open',             ico:'↗' },
-        { lbl:'Close',          mod:'close',            ico:'↙' },
-        { lbl:'Extend Handle',  mod:'extend_handle',    ico:'↑' },
-        { lbl:'Retract Handle', mod:'retract_handle',   ico:'↓' },
-        { lbl:'Spinner On',     mod:'wheel_spinner_on', ico:'⟳' },
-        { lbl:'Spinner Off',    mod:'wheel_spinner_off',ico:'⏹' }
-    ]);
+/* ── Dependencies (pdf) ── */
+var DP=Object.freeze({
+    blue:['blue','black','aluminium'],green:['green','black','aluminium'],
+    orange:['orange','black','aluminium'],red:['red','black','aluminium'],
+    black:['black','aluminium'],aluminium:['black','aluminium']
+});
 
-    /* ────────────────────────────────────────────────────
-       DEPENDENCIES (from PDF)
-       ──────────────────────────────────────────────────── */
-    var DEPS = Object.freeze({
-        blue:      ['blue','black','aluminium'],
-        green:     ['green','black','aluminium'],
-        orange:    ['orange','black','aluminium'],
-        red:       ['red','black','aluminium'],
-        black:     ['black','aluminium'],
-        aluminium: ['black','aluminium']
-    });
+var CS=['body','handles','corners','wheels'];
+var ci=0,mob=innerWidth<=768,rdy=false;
+var sel={body:'aluminium',handles:'aluminium',corners:'aluminium',wheels:'aluminium'};
 
-    var CATS = ['body','handles','corners','wheels'];
+/* ── Build UI immediately ── */
+bCats();bAnims();render();
 
-    /* ────────────────────────────────────────────────────
-       STATE
-       ──────────────────────────────────────────────────── */
-    var ci = 0;
-    var mob = window.innerWidth <= 768;
-    var rdy = false;
-    var sel = { body:'aluminium', handles:'aluminium', corners:'aluminium', wheels:'aluminium' };
+/* ── SDK init ── */
+Unlimited3D.init(SDK);
+addEventListener('Unlimited3DReady',boot);
+var _t=setTimeout(function(){if(!rdy)boot()},8000);
 
-    /* ────────────────────────────────────────────────────
-       INIT
-       ──────────────────────────────────────────────────── */
-    Unlimited3D.init(SDK);
-    window.addEventListener('Unlimited3DReady', boot);
-    var _tout = setTimeout(function () { if (!rdy) boot(); }, 12000);
+function boot(){
+    if(rdy)return;rdy=true;clearTimeout(_t);
+    try{
+        if(Unlimited3D.getSceneGraph)Unlimited3D.getSceneGraph(function(g){console.groupCollapsed('[Samsa] Scene');console.log(g);console.groupEnd()});
+        if(Unlimited3D.getAvailableMaterials)Unlimited3D.getAvailableMaterials(function(e,m){if(!e&&m){console.groupCollapsed('[Samsa] Materials ('+m.length+')');m.forEach(function(x){console.log(x.name)});console.groupEnd()}});
+    }catch(e){}
+    dcam();
+    document.getElementById('ld').classList.add('hide');
+}
 
-    function boot() {
-        if (rdy) return;
-        rdy = true;
-        clearTimeout(_tout);
-        _introspect();
-        _dcam();
-        _buildCats();
-        _buildAnims();
-        _render();
-        document.getElementById('ld').classList.add('hide');
-    }
+/* ── SDK wrappers ── */
+function ap(cat,mat,cb){
+    Unlimited3D.changeMaterial({parts:P[cat],material:mat},function(e){
+        if(!e){if(cb)cb();return}
+        Unlimited3D.changeMaterials({partObjects:[{parts:P[cat],material:mat}]},function(e2){
+            if(!e2){if(cb)cb();return}
+            var f=PF[cat];if(f)Unlimited3D.changeMaterial({parts:f,material:mat},function(){if(cb)cb()})
+        })
+    })
+}
+function md(n){Unlimited3D.activateModifier({modifier:n})}
+function dcam(){md(mob?'default_camera_mobile':'default_camera_desktop')}
 
-    function _introspect() {
-        try {
-            if (Unlimited3D.getSceneGraph)
-                Unlimited3D.getSceneGraph(function (g) {
-                    console.groupCollapsed('[Samsa] Scene Graph');
-                    console.log(g);
-                    console.groupEnd();
-                });
-            if (Unlimited3D.getAvailableMaterials)
-                Unlimited3D.getAvailableMaterials(function (err, mats) {
-                    if (!err && mats) {
-                        console.groupCollapsed('[Samsa] Materials (' + mats.length + ')');
-                        mats.forEach(function (m) { console.log(m.name); });
-                        console.groupEnd();
-                    }
-                });
-        } catch (e) { /* silent */ }
-    }
-
-    /* ────────────────────────────────────────────────────
-       SDK WRAPPERS
-       ──────────────────────────────────────────────────── */
-    function _apply(cat, matName, cb) {
-        Unlimited3D.changeMaterial({ parts: PARTS[cat], material: matName }, function (err) {
-            if (!err) { if (cb) cb(); return; }
-            Unlimited3D.changeMaterials(
-                { partObjects: [{ parts: PARTS[cat], material: matName }] },
-                function (err2) {
-                    if (!err2) { if (cb) cb(); return; }
-                    var fb = PARTS_FB[cat];
-                    if (fb) Unlimited3D.changeMaterial({ parts: fb, material: matName }, function () { if (cb) cb(); });
-                }
-            );
-        });
-    }
-
-    function _mod(name) { Unlimited3D.activateModifier({ modifier: name }); }
-    function _dcam() { _mod(mob ? 'default_camera_mobile' : 'default_camera_desktop'); }
-
-    /* ────────────────────────────────────────────────────
-       TABS
-       ──────────────────────────────────────────────────── */
-    document.querySelectorAll('.tab').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('on'); });
-            btn.classList.add('on');
-            var v = btn.dataset.tab;
-            document.getElementById('v-cfg').style.display = v === 'cfg' ? '' : 'none';
-            document.getElementById('v-anm').style.display = v === 'anm' ? '' : 'none';
-            pnl.classList.remove('min');
-        });
-    });
-
-    /* ────────────────────────────────────────────────────
-       CATEGORIES
-       ──────────────────────────────────────────────────── */
-    function _buildCats() {
-        var el = document.getElementById('cats');
-        el.innerHTML = '';
-        CATS.forEach(function (c, i) {
-            var b = document.createElement('button');
-            b.className = 'cat' + (i === ci ? ' on' : '');
-            b.textContent = c;
-            b.addEventListener('click', function () { _go(c); });
-            el.appendChild(b);
-        });
-    }
-
-    function _go(cat) {
-        ci = CATS.indexOf(cat);
-        _buildCats();
-        document.getElementById('stitle').textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-        var cam = CAM[cat];
-        if (cam) _mod(mob ? cam.m : cam.d);
-        _render();
+/* ── Tabs ── */
+document.querySelectorAll('.tab').forEach(function(b){
+    b.addEventListener('click',function(){
+        document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});
+        b.classList.add('on');
+        var v=b.dataset.tab;
+        document.getElementById('v-cfg').style.display=v==='cfg'?'':'none';
+        document.getElementById('v-anm').style.display=v==='anm'?'':'none';
         pnl.classList.remove('min');
+    })
+});
+
+/* ── Categories ── */
+function bCats(){
+    var el=document.getElementById('cats');el.innerHTML='';
+    CS.forEach(function(c,i){
+        var b=document.createElement('button');
+        b.className='cat'+(i===ci?' on':'');
+        b.textContent=c;
+        b.addEventListener('click',function(){go(c)});
+        el.appendChild(b)
+    })
+}
+function go(c){
+    ci=CS.indexOf(c);bCats();
+    document.getElementById('htl').textContent=c.charAt(0).toUpperCase()+c.slice(1);
+    var cm=CM[c];if(cm)md(mob?cm.m:cm.d);
+    render();pnl.classList.remove('min');
+}
+
+/* ── Colors ── */
+function render(){
+    var g=document.getElementById('cg');g.innerHTML='';
+    var c=CS[ci],list;
+    if(c==='body'){list=MB}else{
+        var ok=DP[sel.body]||DP.aluminium;
+        list=MO.filter(function(m){return ok.indexOf(m.k)!==-1})
     }
+    document.getElementById('hct').textContent=list.length+' option'+(list.length!==1?'s':'');
+    list.forEach(function(it,i){
+        var b=document.createElement('button');
+        b.className='sw fi'+(sel[c]===it.k?' on':'');
+        b.style.animationDelay=(i*.035)+'s';
+        b.setAttribute('aria-label','Select '+it.l);
+        b.innerHTML='<div class="orb" style="background:'+it.g+'"><div class="chk">'+ICO.check+'</div></div><span class="sw-lbl">'+it.l+'</span>';
+        b.addEventListener('click',function(){pick(c,it)});
+        g.appendChild(b)
+    })
+}
 
-    /* ────────────────────────────────────────────────────
-       COLOR SWATCHES
-       ──────────────────────────────────────────────────── */
-    function _render() {
-        var grid = document.getElementById('cgrid');
-        grid.innerHTML = '';
-        var cat = CATS[ci];
-        var list;
-
-        if (cat === 'body') {
-            list = MAT_BODY;
-        } else {
-            var allowed = DEPS[sel.body] || DEPS.aluminium;
-            list = MAT_OTHER.filter(function (m) { return allowed.indexOf(m.k) !== -1; });
-        }
-
-        document.getElementById('scount').textContent = list.length + ' option' + (list.length !== 1 ? 's' : '');
-
-        list.forEach(function (item, i) {
-            var btn = document.createElement('button');
-            btn.className = 'swatch fi' + (sel[cat] === item.k ? ' on' : '');
-            btn.style.animationDelay = (i * 0.04) + 's';
-            btn.setAttribute('aria-label', 'Select ' + item.lbl);
-            btn.innerHTML =
-                '<div class="orb" style="background:' + item.bg + '">' +
-                    '<span class="orb-check">✓</span>' +
-                '</div>' +
-                '<span class="swatch-label">' + item.lbl + '</span>';
-            btn.addEventListener('click', function () { _pick(cat, item); });
-            grid.appendChild(btn);
-        });
+/* ── Pick ── */
+function pick(c,it){
+    ap(c,it.n);sel[c]=it.k;
+    if(c==='body'){
+        var d=MO[0];['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium';ap(x,d.n)})
     }
+    bCats();render()
+}
 
-    /* ────────────────────────────────────────────────────
-       SELECTION + DEPENDENCIES
-       ──────────────────────────────────────────────────── */
-    function _pick(cat, item) {
-        _apply(cat, item.n);
-        sel[cat] = item.k;
+/* ── Anims ── */
+function bAnims(){
+    var el=document.getElementById('ag');el.innerHTML='';
+    AN.forEach(function(a,i){
+        var b=document.createElement('button');
+        b.className='an fi';b.style.animationDelay=(i*.04)+'s';
+        b.innerHTML='<div class="an-i">'+a.i+'</div><span>'+a.l+'</span>';
+        b.addEventListener('click',function(){md(a.m)});
+        el.appendChild(b)
+    })
+}
 
-        if (cat === 'body') {
-            var def = MAT_OTHER[0]; // Chrome ALUMINIUM
-            ['handles', 'corners', 'wheels'].forEach(function (c) {
-                sel[c] = 'aluminium';
-                _apply(c, def.n);
-            });
-        }
+/* ── Nav ── */
+document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length;go(CS[ci])});
+document.getElementById('bx').addEventListener('click',dcam);
 
-        _buildCats();
-        _render();
-    }
+/* ── Mobile toggle ── */
+var pnl=document.getElementById('pnl');
+document.getElementById('hnd').addEventListener('click',function(){if(mob)pnl.classList.toggle('min')});
+if(mob)pnl.classList.add('min');
 
-    /* ────────────────────────────────────────────────────
-       ANIMATIONS
-       ──────────────────────────────────────────────────── */
-    function _buildAnims() {
-        var el = document.getElementById('agrid');
-        el.innerHTML = '';
-        ANIMS.forEach(function (a, i) {
-            var btn = document.createElement('button');
-            btn.className = 'anim-btn fi';
-            btn.style.animationDelay = (i * 0.04) + 's';
-            btn.innerHTML =
-                '<div class="anim-ico">' + a.ico + '</div>' +
-                '<span>' + a.lbl + '</span>';
-            btn.addEventListener('click', function () { _mod(a.mod); });
-            el.appendChild(btn);
-        });
-    }
+addEventListener('resize',function(){
+    var was=mob;mob=innerWidth<=768;
+    if(was!==mob){dcam();pnl.classList.remove('min')}
+});
 
-    /* ────────────────────────────────────────────────────
-       NAVIGATION
-       ──────────────────────────────────────────────────── */
-    document.getElementById('bnext').addEventListener('click', function () {
-        ci = (ci + 1) % CATS.length;
-        _go(CATS[ci]);
-    });
-
-    document.getElementById('bx').addEventListener('click', _dcam);
-
-    /* ────────────────────────────────────────────────────
-       MOBILE PANEL TOGGLE
-       ──────────────────────────────────────────────────── */
-    var pnl = document.getElementById('pnl');
-
-    document.getElementById('hnd').addEventListener('click', function () {
-        if (mob) pnl.classList.toggle('min');
-    });
-
-    // Start collapsed on mobile
-    if (mob) pnl.classList.add('min');
-
-    window.addEventListener('resize', function () {
-        var was = mob;
-        mob = window.innerWidth <= 768;
-        if (was !== mob) {
-            _dcam();
-            pnl.classList.remove('min');
-        }
-    });
-
-    /* ────────────────────────────────────────────────────
-       PUBLIC API
-       ──────────────────────────────────────────────────── */
-    return Object.freeze({
-        get state() { return Object.assign({}, sel); },
-        inspect: _introspect
-    });
+return Object.freeze({get state(){return Object.assign({},sel)},inspect:function(){try{Unlimited3D.getSceneGraph(function(g){console.log(g)})}catch(e){}}});
 })();
 </script>
 </body>
