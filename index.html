@@ -19,7 +19,7 @@
        ═══════════════════════════════════════════════════════ */
     :root {
         --bg: #000;
-        --panel: rgba(8,8,8,0.78);
+        --panel: rgba(14,14,16,0.97);
         --s1: rgba(255,255,255,0.025);
         --s2: rgba(255,255,255,0.045);
         --s3: rgba(255,255,255,0.07);
@@ -70,8 +70,6 @@
         pointer-events:auto;
         position:absolute;top:20px;right:20px;bottom:20px;width:344px;
         background:var(--panel);
-        backdrop-filter:blur(72px) saturate(1.5);
-        -webkit-backdrop-filter:blur(72px) saturate(1.5);
         border:1px solid var(--b1);border-radius:16px;
         display:flex;flex-direction:column;overflow:hidden;
         box-shadow:0 0 0 1px rgba(255,255,255,.015) inset,0 1px 0 rgba(255,255,255,.03) inset,0 40px 80px rgba(0,0,0,.55);
@@ -122,21 +120,25 @@
         transition:all var(--d) var(--e);
     }
     .sw:hover{background:var(--s2);border-color:var(--b1)}
-    .sw.on{background:rgba(255,255,255,.05);border-color:var(--b3)}
+    .sw.on{border-color:var(--b3)}
 
-    /* Orb: the metal sphere */
+    /* Orb: 3D metallic sphere */
     .orb{
-        width:40px;height:40px;border-radius:50%;position:relative;
+        width:44px;height:44px;border-radius:50%;position:relative;
         transition:transform var(--d) var(--es);flex-shrink:0;
-        box-shadow:0 4px 12px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.25);
+        border:1px solid rgba(255,255,255,.08);
+        box-shadow:
+            0 4px 14px rgba(0,0,0,.4),
+            0 1px 3px rgba(0,0,0,.3),
+            inset 0 -3px 6px rgba(0,0,0,.2);
     }
-    /* Top specular highlight — makes it look 3D */
+    /* Specular highlight */
     .orb::before{
         content:'';position:absolute;
-        top:4px;left:8px;width:50%;height:35%;
+        top:4px;left:7px;width:52%;height:32%;
         border-radius:50%;
-        background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.45),rgba(255,255,255,0) 70%);
-        opacity:.7;pointer-events:none;
+        background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.5),rgba(255,255,255,0) 72%);
+        opacity:.65;pointer-events:none;
     }
     /* Selection ring */
     .orb::after{
@@ -145,18 +147,19 @@
         transition:border-color var(--d) var(--e),box-shadow var(--d) var(--e);
     }
     .sw:hover .orb{transform:scale(1.08)}
-    .sw.on .orb::after{border-color:rgba(255,255,255,.55);box-shadow:0 0 16px rgba(255,255,255,.08)}
+    .sw.on .orb::after{border-color:rgba(255,255,255,.5);box-shadow:0 0 20px rgba(255,255,255,.1)}
+    .sw.on .orb{border-color:rgba(255,255,255,.15)}
 
-    /* Checkmark — spring animated */
+    /* Checkmark */
     .chk{
         position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-        opacity:0;transform:scale(.4) rotate(-15deg);
+        opacity:0;transform:scale(.4) rotate(-12deg);
         transition:all .3s var(--es);
     }
-    .chk svg{width:16px;height:16px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+    .chk svg{width:18px;height:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
     .sw.on .chk{opacity:1;transform:scale(1) rotate(0)}
 
-    .sw-lbl{font-size:9px;font-weight:500;color:var(--t3);text-align:center;letter-spacing:.3px;line-height:1.15;transition:color var(--d)}
+    .sw-lbl{font-size:10px;font-weight:500;color:var(--t2);text-align:center;letter-spacing:.2px;line-height:1.15;transition:color var(--d),font-weight 0s}
     .sw.on .sw-lbl{color:var(--t1);font-weight:600}
 
     /* ═══════════════════════════════════════════════════════
@@ -352,20 +355,20 @@ var PF=Object.freeze({body:['Body_Case'],handles:['Handles'],corners:['Corners']
 
 /* ── Materials (pdf) ── */
 var MB=Object.freeze([
-    {k:'blue',n:'01 CHROME SATIN ROYAL BLUE',l:'Royal Blue',g:'radial-gradient(circle at 35% 30%,#6090e8,#1a3c8c 70%)'},
-    {k:'green',n:'02 CHROME SATIN OLIVE GREEN',l:'Olive Green',g:'radial-gradient(circle at 35% 30%,#7ca852,#354d24 70%)'},
-    {k:'orange',n:'03 CHROME SATIN BURNT ORANGE',l:'Burnt Orange',g:'radial-gradient(circle at 35% 30%,#ea8838,#8e3e0c 70%)'},
-    {k:'red',n:'04 CHROME SATIN CHERRY RED',l:'Cherry Red',g:'radial-gradient(circle at 35% 30%,#e04050,#6c0e16 70%)'},
-    {k:'black',n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 35% 30%,#3a3a3a,#0a0a0a 70%)'},
-    {k:'aluminium',n:'06 CHROME SATIN ALUMINUM',l:'Aluminium',g:'radial-gradient(circle at 35% 30%,#d4d8de,#848c96 70%)'}
+    {k:'blue',n:'01 CHROME SATIN ROYAL BLUE',l:'Royal Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {k:'green',n:'02 CHROME SATIN OLIVE GREEN',l:'Olive Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
+    {k:'orange',n:'03 CHROME SATIN BURNT ORANGE',l:'Burnt Orange',g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {k:'red',n:'04 CHROME SATIN CHERRY RED',l:'Cherry Red',g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {k:'black',n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {k:'aluminium',n:'06 CHROME SATIN ALUMINUM',l:'Aluminium',g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'}
 ]);
 var MO=Object.freeze([
-    {k:'aluminium',n:'Chrome ALUMINIUM',l:'Aluminium',g:'radial-gradient(circle at 35% 30%,#d4d8de,#848c96 70%)'},
-    {k:'black',n:'Chrome MIDNIGHT BLACK',l:'Black',g:'radial-gradient(circle at 35% 30%,#3a3a3a,#0a0a0a 70%)'},
-    {k:'red',n:'Chrome CHERRY RED',l:'Red',g:'radial-gradient(circle at 35% 30%,#e04050,#6c0e16 70%)'},
-    {k:'blue',n:'Chrome ROYAL BLUE',l:'Blue',g:'radial-gradient(circle at 35% 30%,#6090e8,#1a3c8c 70%)'},
-    {k:'orange',n:'Chrome SATIN BURNT ORANGE',l:'Orange',g:'radial-gradient(circle at 35% 30%,#ea8838,#8e3e0c 70%)'},
-    {k:'green',n:'Chrome SATIN OLIVE GREEN',l:'Green',g:'radial-gradient(circle at 35% 30%,#7ca852,#354d24 70%)'}
+    {k:'aluminium',n:'Chrome ALUMINIUM',l:'Aluminium',g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'},
+    {k:'black',n:'Chrome MIDNIGHT BLACK',l:'Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {k:'red',n:'Chrome CHERRY RED',l:'Red',g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {k:'blue',n:'Chrome ROYAL BLUE',l:'Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {k:'orange',n:'Chrome SATIN BURNT ORANGE',l:'Orange',g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {k:'green',n:'Chrome SATIN OLIVE GREEN',l:'Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
 ]);
 
 /* ── Cameras (pdf) ── */
