@@ -518,6 +518,18 @@ addEventListener('resize',function(){
 
 return Object.freeze({get state(){return Object.assign({},sel)},inspect:function(){try{Unlimited3D.getSceneGraph(function(g){console.log(g)})}catch(e){}}});
 })();
+// ---- SEND CONFIG TO SHOPIFY PARENT ----
+setInterval(function () {
+  if (window.parent) {
+    window.parent.postMessage(
+      {
+        type: "CONFIG_UPDATE",
+        payload: App.state
+      },
+      "*"
+    );
+  }
+}, 1000);
 </script>
 </body>
 </html>
