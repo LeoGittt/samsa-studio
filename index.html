@@ -2,153 +2,580 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsa - Suitcase Configurator FINAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+    <title>Samsa Studio | Suitcase Configurator</title>
+    <meta name="description" content="Customize your premium suitcase in 3D.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://distcdn.unlimited3d.com">
+    <link rel="preconnect" href="https://dist.unlimited3d.com">
+    <link rel="dns-prefetch" href="https://distcdn.unlimited3d.com">
+    <link rel="dns-prefetch" href="https://dist.unlimited3d.com">
+    <link rel="preload" href="https://distcdn.unlimited3d.com/pres/v/2.10.0/unlimited3d.min.js" as="script">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, sans-serif;
-            background: #000;
-            color: #fff;
-            overflow: hidden;
+    :root {
+        --bg: #000;
+        --panel: rgba(14,14,16,0.97);
+        --s1: rgba(255,255,255,0.025);
+        --s2: rgba(255,255,255,0.045);
+        --s3: rgba(255,255,255,0.07);
+        --s4: rgba(255,255,255,0.11);
+        --b1: rgba(255,255,255,0.04);
+        --b2: rgba(255,255,255,0.09);
+        --b3: rgba(255,255,255,0.16);
+        --t1: rgba(255,255,255,0.92);
+        --t2: rgba(255,255,255,0.45);
+        --t3: rgba(255,255,255,0.22);
+        --e: cubic-bezier(0.22,1,0.36,1);
+        --es: cubic-bezier(0.34,1.56,0.64,1);
+        --d: 0.28s;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    button{font-family:inherit;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+
+    .loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .5s,visibility .5s}
+    .loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .ld-t{font-size:8px;font-weight:600;letter-spacing:6px;text-transform:uppercase;color:var(--t3)}
+    .ld-bw{width:100px;height:1.5px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden}
+    .ld-b{height:100%;width:0%;background:rgba(255,255,255,.35);border-radius:2px;animation:lp 2.5s var(--e) forwards}
+    @keyframes lp{0%{width:0}30%{width:55%}60%{width:72%}85%{width:88%}100%{width:93%}}
+    .loader.hide .ld-b{width:100%;transition:width .15s}
+
+    #container3d_replace{position:fixed;inset:0;width:100%;height:100%}
+
+    .ui{position:fixed;inset:0;z-index:10;pointer-events:none}
+    .brand{position:absolute;top:24px;left:28px;pointer-events:auto;user-select:none}
+    .brand b{display:block;font-weight:700;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--t1)}
+    .brand small{display:block;font-size:8px;font-weight:400;letter-spacing:1.5px;color:var(--t3);margin-top:3px}
+
+    .toast{
+        position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+        background:rgba(255,255,255,0.95);color:#000;
+        padding:14px 28px;border-radius:30px;
+        font-size:13px;font-weight:500;
+        box-shadow:0 10px 40px rgba(0,0,0,0.3);
+        z-index:9998;pointer-events:none;
+        transition:transform 0.4s var(--e),opacity 0.3s;
+        opacity:0;
+    }
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+    .panel{
+        pointer-events:auto;
+        position:absolute;top:20px;right:20px;bottom:20px;width:344px;
+        background:var(--panel);
+        border:1px solid var(--b1);border-radius:16px;
+        display:flex;flex-direction:column;overflow:hidden;
+        box-shadow:0 0 0 1px rgba(255,255,255,.015) inset,0 1px 0 rgba(255,255,255,.03) inset,0 40px 80px rgba(0,0,0,.55);
+    }
+    .handle{display:none}
+    .scroll{flex:1;overflow-y:auto;padding:0 20px 20px;scrollbar-width:none}
+    .scroll::-webkit-scrollbar{display:none}
+
+    .tabs{display:flex;padding:16px 20px 0;border-bottom:1px solid var(--b1);flex-shrink:0}
+    .tab{flex:1;padding:12px 0;background:none;border:none;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);border-bottom:1.5px solid transparent;margin-bottom:-1px;transition:color var(--d) var(--e),border-color var(--d) var(--e)}
+    .tab:hover{color:var(--t2)}
+    .tab.on{color:var(--t1);border-bottom-color:#fff}
+
+    .cats{display:flex;gap:8px;margin:20px 0}
+    .cat{
+        flex:1;padding:8px 0;
+        background:transparent;border:1px solid var(--b1);border-radius:8px;
+        font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+        color:var(--t3);text-align:center;
+        transition:all var(--d) var(--e);position:relative;overflow:hidden;
+    }
+    .cat::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;background:#fff;opacity:0;transition:opacity var(--d)}
+    .cat:hover{border-color:var(--b2);color:var(--t2)}
+    .cat.on{background:var(--s3);border-color:var(--b3);color:var(--t1)}
+    .cat.on::after{opacity:.6}
+
+    .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .hd-title{font-size:16px;font-weight:600;color:var(--t1);letter-spacing:.2px}
+    .hd-sub{font-size:9px;font-weight:400;color:var(--t3);margin-left:8px}
+    .btn-x{width:28px;height:28px;border-radius:50%;background:var(--s1);border:1px solid var(--b1);color:var(--t3);font-size:10px;display:grid;place-items:center;transition:all var(--d) var(--e)}
+    .btn-x:hover{background:var(--s2);border-color:var(--b2);color:var(--t1)}
+
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+    .sw{
+        display:flex;flex-direction:column;align-items:center;gap:8px;
+        padding:16px 8px 12px;border-radius:12px;
+        border:1px solid transparent;background:transparent;
+        transition:all var(--d) var(--e);
+    }
+    .sw:hover{background:var(--s2);border-color:var(--b1)}
+    .sw.on{border-color:var(--b3)}
+
+    .orb{
+        width:44px;height:44px;border-radius:50%;position:relative;
+        transition:transform var(--d) var(--es);flex-shrink:0;
+        border:1px solid rgba(255,255,255,.08);
+        box-shadow:
+            0 4px 14px rgba(0,0,0,.4),
+            0 1px 3px rgba(0,0,0,.3),
+            inset 0 -3px 6px rgba(0,0,0,.2);
+    }
+    .orb::before{
+        content:'';position:absolute;
+        top:4px;left:7px;width:52%;height:32%;
+        border-radius:50%;
+        background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.5),rgba(255,255,255,0) 72%);
+        opacity:.65;pointer-events:none;
+    }
+    .orb::after{
+        content:'';position:absolute;inset:-5px;border-radius:50%;
+        border:2px solid transparent;
+        transition:border-color var(--d) var(--e),box-shadow var(--d) var(--e);
+    }
+    .sw:hover .orb{transform:scale(1.08)}
+    .sw.on .orb::after{border-color:rgba(255,255,255,.5);box-shadow:0 0 20px rgba(255,255,255,.1)}
+    .sw.on .orb{border-color:rgba(255,255,255,.15)}
+
+    .chk{
+        position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+        opacity:0;transform:scale(.4) rotate(-12deg);
+        transition:all .3s var(--es);
+    }
+    .chk svg{width:18px;height:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+    .sw.on .chk{opacity:1;transform:scale(1) rotate(0)}
+
+    .sw-lbl{font-size:10px;font-weight:500;color:var(--t2);text-align:center;letter-spacing:.2px;line-height:1.15;transition:color var(--d),font-weight 0s}
+    .sw.on .sw-lbl{color:var(--t1);font-weight:600}
+
+    .btn-go{
+        width:100%;padding:14px;
+        background:transparent;color:var(--t1);
+        border:1px solid var(--b2);border-radius:10px;
+        font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+        transition:all var(--d) var(--e);position:relative;overflow:hidden;
+    }
+    .btn-go::before{
+        content:'';position:absolute;inset:0;
+        background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+        transition:opacity var(--d);
+    }
+    .btn-go:hover{border-color:var(--b3);background:rgba(255,255,255,.04)}
+    .btn-go:active{transform:scale(.98)}
+
+    .anm-info{
+        margin-top:16px;
+        padding:16px;
+        background:var(--s2);
+        border:1px solid var(--b1);
+        border-radius:10px;
+        text-align:center;
+    }
+    .anm-info-title{
+        font-size:11px;
+        font-weight:600;
+        color:var(--t1);
+        margin-bottom:8px;
+        letter-spacing:.5px;
+    }
+    .anm-info-text{
+        font-size:10px;
+        color:var(--t2);
+        line-height:1.5;
+    }
+
+    @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    .fi{animation:fi .3s var(--e) both}
+
+    @media(max-width:1100px){.panel{width:320px;right:16px;top:16px;bottom:16px}}
+
+    @media(max-width:768px){
+        .brand{top:12px;left:14px;padding-top:env(safe-area-inset-top,0)}
+        .brand b{font-size:10px;letter-spacing:2.5px}
+        .brand small{display:none}
+
+        .handle{display:flex;flex-direction:column;align-items:center;width:100%;padding:8px 0 2px;background:none;border:none;flex-shrink:0}
+        .handle-pill{width:28px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);transition:background .2s}
+        .handle:active .handle-pill{background:rgba(255,255,255,.3)}
+        .handle-hint{font-size:8px;color:var(--t3);margin-top:2px;transition:transform .3s var(--e);line-height:1}
+
+        .panel{
+            position:fixed!important;top:auto!important;right:0!important;left:0!important;bottom:0!important;
+            width:100%!important;height:auto;max-height:44vh;
+            border-radius:14px 14px 0 0;border-bottom:none;
+            padding-bottom:env(safe-area-inset-bottom,0);
+            transition:max-height .4s var(--e);
+            box-shadow:0 -8px 40px rgba(0,0,0,.5);
         }
-        
-        #container3d_replace {
-            position: fixed;
-            inset: 0;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.95);
-            color: #000;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 9999;
-        }
-        
-        .toast.show {
-            opacity: 1;
-        }
+        .panel.min{max-height:36px;overflow:hidden}
+        .panel.min .tabs,.panel.min .scroll{opacity:0;visibility:hidden;pointer-events:none;position:absolute}
+        .panel.min .handle-hint{transform:rotate(180deg)}
+
+        .tabs{padding:2px 14px 0}
+        .tab{padding:8px 0 10px;font-size:9px;letter-spacing:1.5px;min-height:34px}
+        .scroll{padding:0 14px 14px}
+
+        .cats{margin:12px 0;gap:4px}
+        .cat{padding:7px 0;font-size:8px;border-radius:6px;letter-spacing:.6px}
+
+        .hd{margin-bottom:10px}
+        .hd-title{font-size:13px}
+        .hd-sub{font-size:8px}
+        .btn-x{width:26px;height:26px;font-size:9px}
+
+        .grid{gap:4px;margin-bottom:12px}
+        .sw{padding:8px 4px 6px;gap:5px;border-radius:8px}
+        .orb{width:30px;height:30px}
+        .orb::before{top:3px;left:5px}
+        .orb::after{inset:-4px}
+        .chk svg{width:12px;height:12px}
+        .sw-lbl{font-size:7.5px}
+
+        .btn-go{padding:12px;font-size:9px;letter-spacing:1.5px;border-radius:8px}
+
+        .toast{bottom:20px;font-size:12px;padding:12px 24px}
+    }
+
+    @media(max-width:768px) and (orientation:landscape){
+        .panel{left:auto!important;right:0!important;top:0!important;width:42%!important;max-height:100vh;border-radius:14px 0 0 14px}
+        .handle{display:none}
+        .panel.min{max-height:100vh}
+        .panel.min .tabs,.panel.min .scroll{opacity:1;visibility:visible;pointer-events:auto;position:static}
+    }
+
+    @media(max-width:390px){
+        .panel{max-height:46vh}
+        .orb{width:26px;height:26px}
+        .sw-lbl{font-size:6.5px}
+    }
     </style>
 </head>
 <body>
 
+<div class="loader" id="ld">
+    <span class="ld-t">Loading</span>
+    <div class="ld-bw"><div class="ld-b"></div></div>
+</div>
+
 <div id="container3d_replace"></div>
+
 <div class="toast" id="toast"></div>
+
+<div class="ui">
+    <div class="brand"><b>Samsa Studio</b><small>Suitcase Configurator</small></div>
+
+    <div class="panel" id="pnl">
+        <button class="handle" id="hnd" aria-label="Toggle panel">
+            <div class="handle-pill"></div>
+            <div class="handle-hint">▼</div>
+        </button>
+
+        <div class="tabs">
+            <button class="tab on" data-tab="cfg">Configurator</button>
+            <button class="tab" data-tab="anm">Animations</button>
+        </div>
+
+        <div class="scroll">
+            <div id="v-cfg">
+                <div class="cats" id="cats"></div>
+                <div class="hd">
+                    <div>
+                        <span class="hd-title" id="htl">Body</span>
+                        <span class="hd-sub" id="hct"></span>
+                    </div>
+                    <button class="btn-x" id="bx" title="Reset camera">✕</button>
+                </div>
+                <div class="grid" id="cg"></div>
+                <button class="btn-go" id="bn">Next Step →</button>
+            </div>
+            <div id="v-anm" style="display:none">
+                <div class="anm-info">
+                    <div class="anm-info-title">🎬 Interactive Annotations</div>
+                    <div class="anm-info-text">
+                        Click directly on the hotspots in the 3D model to trigger animations like Open, Close, Extend Handle, etc.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://distcdn.unlimited3d.com/pres/v/2.10.0/unlimited3d.min.js"></script>
 <script>
-// ✅ USAR EL WORKSPACE "next" (ID: 93698) - Este tiene las anotaciones
-var options = {
-    distID: 'latest',
-    solution3DName: 'suitcase-color',
-    projectName: 'resources-for-videos-and-marketing-purposes',
-    solution3DID: '62766',
-    workspaceID: '93698',  // ← CRÍTICO: workspace "next"
-    containerID: 'container3d_replace',
-    onLoadedCB: onModelLoaded
+var App=(function(){'use strict';
+
+var ICO={
+    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
-function onModelLoaded() {
-    console.log('✅ Model loaded with annotations');
-    
-    // Esperar un momento para que todo se inicialice
-    setTimeout(setupAnnotationListeners, 1000);
-}
+// ✅ CRÍTICO: Usar workspace "next" (93698) que tiene las anotaciones
+var SDK=Object.freeze({
+    distID:'latest',
+    solution3DName:'suitcase-color',
+    projectName:'resources-for-videos-and-marketing-purposes',
+    solution3DID:'62766',
+    workspaceID:'93698',  // ← workspace "next"
+    containerID:'container3d_replace'
+});
 
-function setupAnnotationListeners() {
-    console.log('🎯 Setting up annotation click listeners...');
+var P=Object.freeze({
+    body:['Body_metal_base','Body_metal_cover'],
+    handles:['Handle_base1','Handle_metal-1','Handle_telescope-1'],
+    corners:['Corners_base','Corners_cover'],
+    wheels:['Wheels_base','Wheels_base_cover','Wheels_front_right_base','Wheels_front_left_base','Wheels_back_right_base','Wheels_back_left_base','Wheels_front_right_center','Wheels_front_left_center','Wheels_back_right_center','Wheels_back_left_centar']
+});
+var PF=Object.freeze({body:['Body_Case'],handles:['Handles'],corners:['Corners'],wheels:['Wheels']});
+
+var MB=Object.freeze([
+    {k:'blue',n:'01 CHROME SATIN ROYAL BLUE',l:'Royal Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {k:'green',n:'02 CHROME SATIN OLIVE GREEN',l:'Olive Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
+    {k:'orange',n:'03 CHROME SATIN BURNT ORANGE',l:'Burnt Orange',g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {k:'red',n:'04 CHROME SATIN CHERRY RED',l:'Cherry Red',g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {k:'black',n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {k:'aluminium',n:'06 CHROME SATIN ALUMINUM',l:'Aluminium',g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'}
+]);
+var MO=Object.freeze([
+    {k:'aluminium',n:'Chrome ALUMINIUM',l:'Aluminium',g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'},
+    {k:'black',n:'Chrome MIDNIGHT BLACK',l:'Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {k:'red',n:'Chrome CHERRY RED',l:'Red',g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {k:'blue',n:'Chrome ROYAL BLUE',l:'Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {k:'orange',n:'Chrome SATIN BURNT ORANGE',l:'Orange',g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {k:'green',n:'Chrome SATIN OLIVE GREEN',l:'Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
+]);
+
+var CM=Object.freeze({
+    body:{d:'camera_body',m:'camera_body_mobile'},
+    handles:{d:'camera_handle',m:'camera_handle_mobile'},
+    corners:{d:'camera_corners',m:'Camera_corners_mobile'},
+    wheels:{d:'camera_wheels',m:'camera_wheels_mobile'}
+});
+
+var DP=Object.freeze({
+    blue:['blue','black','aluminium'],green:['green','black','aluminium'],
+    orange:['orange','black','aluminium'],red:['red','black','aluminium'],
+    black:['black','aluminium'],aluminium:['black','aluminium']
+});
+
+var CS=['body','handles','corners','wheels'];
+var ci=0,mob=innerWidth<=768,rdy=false,curMode='cfg';
+var sel={body:'aluminium',handles:'aluminium',corners:'aluminium',wheels:'aluminium'};
+
+bCats();render();
+
+Unlimited3D.init(SDK);
+addEventListener('Unlimited3DReady',boot);
+var _t=setTimeout(function(){if(!rdy)boot()},8000);
+
+function boot(){
+    if(rdy)return;rdy=true;clearTimeout(_t);
     
-    // ✅ MÉTODO 1: Escuchar clicks en elementos con class "annotation"
-    document.addEventListener('click', function(e) {
-        // Buscar si el click fue en una anotación o sus hijos
-        var target = e.target;
-        var annotation = target.closest('[class*="annotation"]') || 
-                        target.closest('[class*="hotspot"]') ||
-                        target.closest('[data-annotation]');
+    try{
+        // Configurar restricciones de cámara
+        if(Unlimited3D.setCameraControlsSettings){
+            Unlimited3D.setCameraControlsSettings({
+                enableZoom:true,
+                enablePan:false,
+                enableRotate:true,
+                minDistance:2.5,
+                maxDistance:8,
+                dampingFactor:0.15
+            });
+        }
         
-        if (annotation) {
-            var text = annotation.textContent || annotation.innerText || '';
-            console.log('🎯 Annotation clicked:', text);
-            handleAnnotationClick(text.trim());
-        }
-    }, true); // useCapture = true
+        // ✅ NUEVO: Setup click handler para anotaciones
+        setupAnnotationClickHandler();
+        
+    }catch(e){console.warn('[Samsa] Init warning:',e)}
     
-    // ✅ MÉTODO 2: Unlimited3D API
-    if (typeof Unlimited3D.onAnnotationClick !== 'undefined') {
-        Unlimited3D.onAnnotationClick = function(name) {
-            console.log('🎯 API annotation clicked:', name);
-            handleAnnotationClick(name);
-        };
-    }
-    
-    console.log('✓ Listeners ready');
+    dcam();
+    document.getElementById('ld').classList.add('hide');
+    toggleAnnotations(false); // Ocultar en modo configurator
+    sendConfig();
 }
 
-function handleAnnotationClick(text) {
-    var modifier = null;
-    var displayName = text;
-    
-    // Mapeo de texto → modificadores (puedes ajustar según tus anotaciones)
-    var lowerText = text.toLowerCase();
-    
-    if (lowerText.includes('open')) {
-        modifier = 'open';
-        displayName = 'Open';
-    } else if (lowerText.includes('close')) {
-        modifier = 'close';
-        displayName = 'Close';
-    } else if (lowerText.includes('extend')) {
-        modifier = 'extend_handle';
-        displayName = 'Extend Handle';
-    } else if (lowerText.includes('retract')) {
-        modifier = 'retract_handle';
-        displayName = 'Retract Handle';
-    } else if (lowerText.includes('spinner') && lowerText.includes('on')) {
-        modifier = 'wheel_spinner_on';
-        displayName = 'Wheel Spinner On';
-    } else if (lowerText.includes('spinner') && (lowerText.includes('off') || lowerText.includes('stop'))) {
-        modifier = 'wheel_spinner_off';
-        displayName = 'Wheel Spinner Off';
-    }
-    
-    if (modifier) {
-        console.log('✓ Activating modifier:', modifier);
-        try {
-            Unlimited3D.activateModifier({modifier: modifier});
-            showToast('🎬 ' + displayName);
-        } catch(e) {
-            console.error('✗ Error activating modifier:', e);
+// ✅ CRÍTICO: Manejar clicks en anotaciones
+function setupAnnotationClickHandler(){
+    setTimeout(function(){
+        var canvas = document.querySelector('canvas[data-engine*="three"]');
+        if(!canvas){
+            console.warn('[Samsa] Canvas not found, retrying...');
+            setTimeout(setupAnnotationClickHandler, 500);
+            return;
         }
-    } else {
-        console.log('⚠️ No modifier found for:', text);
-    }
+        
+        canvas.addEventListener('click', function(e){
+            if(curMode !== 'anm') return; // Solo en modo Animations
+            
+            setTimeout(function(){
+                Unlimited3D.getSelectedAnnotations(function(err, selected){
+                    if(selected && selected.length > 0){
+                        var name = selected[0].name.toLowerCase();
+                        var modifier = null;
+                        var display = selected[0].name;
+                        
+                        if(name.includes('open') && !name.includes('locker')) modifier = 'open';
+                        else if(name.includes('close') && !name.includes('locker')) modifier = 'close';
+                        else if(name.includes('extend')) modifier = 'extend_handle';
+                        else if(name.includes('retract')) modifier = 'retract_handle';
+                        else if(name.includes('spinner') && name.includes('on')) modifier = 'wheel_spinner_on';
+                        else if(name.includes('spinner') && name.includes('off')) modifier = 'wheel_spinner_off';
+                        
+                        if(modifier){
+                            console.log('[Samsa] ✓ Annotation clicked:', display, '→', modifier);
+                            md(modifier);
+                            showToast('🎬 ' + display);
+                        }
+                    }
+                });
+            }, 100);
+        });
+        
+        console.log('[Samsa] ✓ Annotation click handler installed');
+    }, 1000);
 }
 
-function showToast(msg) {
-    var toast = document.getElementById('toast');
-    toast.textContent = msg;
+function toggleAnnotations(show){
+    try{
+        if(Unlimited3D.showAnnotations){
+            Unlimited3D.showAnnotations(show);
+        }
+    }catch(e){console.warn('[Samsa] Toggle annotations error:',e)}
+}
+
+function showToast(msg){
+    var toast=document.getElementById('toast');
+    toast.textContent=msg;
     toast.classList.add('show');
-    setTimeout(function() {
-        toast.classList.remove('show');
-    }, 2000);
+    setTimeout(function(){toast.classList.remove('show')},2000);
 }
 
-// Initialize
-Unlimited3D.init(options);
+function ap(cat,mat,cb){
+    Unlimited3D.changeMaterial({parts:P[cat],material:mat},function(e){
+        if(!e){if(cb)cb();return}
+        Unlimited3D.changeMaterials({partObjects:[{parts:P[cat],material:mat}]},function(e2){
+            if(!e2){if(cb)cb();return}
+            var f=PF[cat];if(f)Unlimited3D.changeMaterial({parts:f,material:mat},function(){if(cb)cb()})
+        })
+    })
+}
 
-console.log('🚀 Configurator initialized');
-console.log('📍 Using workspace ID: 93698 (next)');
-console.log('👆 Click on annotation hotspots in the 3D model to trigger animations');
+function md(n){
+    try{
+        Unlimited3D.activateModifier({modifier:n});
+        console.log('[Samsa] ✓ Modifier activated:',n);
+    }catch(e){console.warn('[Samsa] Modifier error:',n,e)}
+}
+
+function dcam(){md(mob?'default_camera_mobile':'default_camera_desktop')}
+
+document.querySelectorAll('.tab').forEach(function(b){
+    b.addEventListener('click',function(){
+        document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});
+        b.classList.add('on');
+        var v=b.dataset.tab;
+        curMode=v;
+        
+        document.getElementById('v-cfg').style.display=v==='cfg'?'':'none';
+        document.getElementById('v-anm').style.display=v==='anm'?'':'none';
+        pnl.classList.remove('min');
+        
+        if(v==='anm'){
+            toggleAnnotations(true);
+            dcam();
+            showToast('Click on hotspots in the 3D model');
+        }else{
+            toggleAnnotations(false);
+            dcam();
+        }
+    })
+});
+
+function bCats(){
+    var el=document.getElementById('cats');el.innerHTML='';
+    CS.forEach(function(c,i){
+        var b=document.createElement('button');
+        b.className='cat'+(i===ci?' on':'');
+        b.textContent=c;
+        b.addEventListener('click',function(){go(c)});
+        el.appendChild(b)
+    })
+}
+
+function go(c){
+    ci=CS.indexOf(c);bCats();
+    document.getElementById('htl').textContent=c.charAt(0).toUpperCase()+c.slice(1);
+    var cm=CM[c];if(cm)md(mob?cm.m:cm.d);
+    render();pnl.classList.remove('min');
+}
+
+function render(){
+    var g=document.getElementById('cg');g.innerHTML='';
+    var c=CS[ci],list;
+    if(c==='body'){list=MB}else{
+        var ok=DP[sel.body]||DP.aluminium;
+        list=MO.filter(function(m){return ok.indexOf(m.k)!==-1})
+    }
+    document.getElementById('hct').textContent=list.length+' option'+(list.length!==1?'s':'');
+    list.forEach(function(it,i){
+        var b=document.createElement('button');
+        b.className='sw fi'+(sel[c]===it.k?' on':'');
+        b.style.animationDelay=(i*.035)+'s';
+        b.setAttribute('aria-label','Select '+it.l);
+        b.innerHTML='<div class="orb" style="background:'+it.g+'"><div class="chk">'+ICO.check+'</div></div><span class="sw-lbl">'+it.l+'</span>';
+        b.addEventListener('click',function(){pick(c,it)});
+        g.appendChild(b)
+    })
+}
+
+function pick(c,it){
+    ap(c,it.n);sel[c]=it.k;
+    if(c==='body'){
+        var d=MO[0];['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium';ap(x,d.n)})
+    }
+    bCats();render();
+    sendConfig();
+}
+
+function sendConfig(){
+    if(window.parent && window.parent!==window){
+        var readable={
+            body:MB.find(function(m){return m.k===sel.body}).l,
+            handles:MO.find(function(m){return m.k===sel.handles}).l,
+            corners:MO.find(function(m){return m.k===sel.corners}).l,
+            wheels:MO.find(function(m){return m.k===sel.wheels}).l
+        };
+        window.parent.postMessage({
+            type:'CONFIG_UPDATE',
+            payload:sel,
+            readable:readable,
+            timestamp:Date.now()
+        },'*');
+    }
+}
+
+document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length;go(CS[ci])});
+document.getElementById('bx').addEventListener('click',dcam);
+
+var pnl=document.getElementById('pnl');
+document.getElementById('hnd').addEventListener('click',function(){if(mob)pnl.classList.toggle('min')});
+if(mob)pnl.classList.add('min');
+
+addEventListener('resize',function(){
+    var was=mob;mob=innerWidth<=768;
+    if(was!==mob){dcam();pnl.classList.remove('min')}
+});
+
+setInterval(sendConfig,2000);
+
+return Object.freeze({
+    get state(){return Object.assign({},sel)},
+    get readable(){
+        return{
+            body:MB.find(function(m){return m.k===sel.body}).l,
+            handles:MO.find(function(m){return m.k===sel.handles}).l,
+            corners:MO.find(function(m){return m.k===sel.corners}).l,
+            wheels:MO.find(function(m){return m.k===sel.wheels}).l
+        }
+    }
+});
+})();
 </script>
-
 </body>
 </html>
