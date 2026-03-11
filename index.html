@@ -14,9 +14,6 @@
     <link rel="preload" href="https://distcdn.unlimited3d.com/pres/v/2.10.0/unlimited3d.min.js" as="script">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-    /* ═══════════════════════════════════════════════════════
-       DESIGN SYSTEM — 4px grid, luxury dark
-       ═══════════════════════════════════════════════════════ */
     :root {
         --bg: #000;
         --panel: rgba(14,14,16,0.97);
@@ -39,9 +36,6 @@
     button{font-family:inherit;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
     button:focus-visible{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
 
-    /* ═══════════════════════════════════════════════════════
-       LOADER — progress bar style
-       ═══════════════════════════════════════════════════════ */
     .loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .5s,visibility .5s}
     .loader.hide{opacity:0;visibility:hidden;pointer-events:none}
     .ld-t{font-size:8px;font-weight:600;letter-spacing:6px;text-transform:uppercase;color:var(--t3)}
@@ -50,22 +44,26 @@
     @keyframes lp{0%{width:0}30%{width:55%}60%{width:72%}85%{width:88%}100%{width:93%}}
     .loader.hide .ld-b{width:100%;transition:width .15s}
 
-    /* ═══════════════════════════════════════════════════════
-       VIEWPORT
-       ═══════════════════════════════════════════════════════ */
     #container3d_replace{position:fixed;inset:0;width:100%;height:100%}
 
-    /* ═══════════════════════════════════════════════════════
-       UI SHELL
-       ═══════════════════════════════════════════════════════ */
     .ui{position:fixed;inset:0;z-index:10;pointer-events:none}
     .brand{position:absolute;top:24px;left:28px;pointer-events:auto;user-select:none}
     .brand b{display:block;font-weight:700;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--t1)}
     .brand small{display:block;font-size:8px;font-weight:400;letter-spacing:1.5px;color:var(--t3);margin-top:3px}
 
-    /* ═══════════════════════════════════════════════════════
-       PANEL
-       ═══════════════════════════════════════════════════════ */
+    /* ═══ TOAST MESSAGE ═══ */
+    .toast{
+        position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+        background:rgba(255,255,255,0.95);color:#000;
+        padding:14px 28px;border-radius:30px;
+        font-size:13px;font-weight:500;
+        box-shadow:0 10px 40px rgba(0,0,0,0.3);
+        z-index:9998;pointer-events:none;
+        transition:transform 0.4s var(--e),opacity 0.3s;
+        opacity:0;
+    }
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
     .panel{
         pointer-events:auto;
         position:absolute;top:20px;right:20px;bottom:20px;width:344px;
@@ -78,17 +76,11 @@
     .scroll{flex:1;overflow-y:auto;padding:0 20px 20px;scrollbar-width:none}
     .scroll::-webkit-scrollbar{display:none}
 
-    /* ═══════════════════════════════════════════════════════
-       TABS — underlined
-       ═══════════════════════════════════════════════════════ */
     .tabs{display:flex;padding:16px 20px 0;border-bottom:1px solid var(--b1);flex-shrink:0}
     .tab{flex:1;padding:12px 0;background:none;border:none;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);border-bottom:1.5px solid transparent;margin-bottom:-1px;transition:color var(--d) var(--e),border-color var(--d) var(--e)}
     .tab:hover{color:var(--t2)}
     .tab.on{color:var(--t1);border-bottom-color:#fff}
 
-    /* ═══════════════════════════════════════════════════════
-       CATEGORY PILLS
-       ═══════════════════════════════════════════════════════ */
     .cats{display:flex;gap:8px;margin:20px 0}
     .cat{
         flex:1;padding:8px 0;
@@ -102,16 +94,12 @@
     .cat.on{background:var(--s3);border-color:var(--b3);color:var(--t1)}
     .cat.on::after{opacity:.6}
 
-    /* Section header */
     .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
     .hd-title{font-size:16px;font-weight:600;color:var(--t1);letter-spacing:.2px}
     .hd-sub{font-size:9px;font-weight:400;color:var(--t3);margin-left:8px}
     .btn-x{width:28px;height:28px;border-radius:50%;background:var(--s1);border:1px solid var(--b1);color:var(--t3);font-size:10px;display:grid;place-items:center;transition:all var(--d) var(--e)}
     .btn-x:hover{background:var(--s2);border-color:var(--b2);color:var(--t1)}
 
-    /* ═══════════════════════════════════════════════════════
-       COLOR SWATCHES — 3D metallic spheres
-       ═══════════════════════════════════════════════════════ */
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
     .sw{
         display:flex;flex-direction:column;align-items:center;gap:8px;
@@ -122,7 +110,6 @@
     .sw:hover{background:var(--s2);border-color:var(--b1)}
     .sw.on{border-color:var(--b3)}
 
-    /* Orb: 3D metallic sphere */
     .orb{
         width:44px;height:44px;border-radius:50%;position:relative;
         transition:transform var(--d) var(--es);flex-shrink:0;
@@ -132,7 +119,6 @@
             0 1px 3px rgba(0,0,0,.3),
             inset 0 -3px 6px rgba(0,0,0,.2);
     }
-    /* Specular highlight */
     .orb::before{
         content:'';position:absolute;
         top:4px;left:7px;width:52%;height:32%;
@@ -140,7 +126,6 @@
         background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.5),rgba(255,255,255,0) 72%);
         opacity:.65;pointer-events:none;
     }
-    /* Selection ring */
     .orb::after{
         content:'';position:absolute;inset:-5px;border-radius:50%;
         border:2px solid transparent;
@@ -150,7 +135,6 @@
     .sw.on .orb::after{border-color:rgba(255,255,255,.5);box-shadow:0 0 20px rgba(255,255,255,.1)}
     .sw.on .orb{border-color:rgba(255,255,255,.15)}
 
-    /* Checkmark */
     .chk{
         position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
         opacity:0;transform:scale(.4) rotate(-12deg);
@@ -162,9 +146,6 @@
     .sw-lbl{font-size:10px;font-weight:500;color:var(--t2);text-align:center;letter-spacing:.2px;line-height:1.15;transition:color var(--d),font-weight 0s}
     .sw.on .sw-lbl{color:var(--t1);font-weight:600}
 
-    /* ═══════════════════════════════════════════════════════
-       NEXT BUTTON — outline premium style
-       ═══════════════════════════════════════════════════════ */
     .btn-go{
         width:100%;padding:14px;
         background:transparent;color:var(--t1);
@@ -180,42 +161,33 @@
     .btn-go:hover{border-color:var(--b3);background:rgba(255,255,255,.04)}
     .btn-go:active{transform:scale(.98)}
 
-    /* ═══════════════════════════════════════════════════════
-       ANIMATIONS TAB — with SVG icons
-       ═══════════════════════════════════════════════════════ */
-    .anims{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .an{
-        display:flex;align-items:center;gap:12px;
-        padding:14px 16px;
-        background:var(--s1);border:1px solid var(--b1);border-radius:10px;
-        font-size:11px;font-weight:500;color:var(--t2);text-align:left;
-        transition:all var(--d) var(--e);
+    /* ═══ ANIMATIONS INFO ═══ */
+    .anm-info{
+        margin-top:16px;
+        padding:16px;
+        background:var(--s2);
+        border:1px solid var(--b1);
+        border-radius:10px;
+        text-align:center;
     }
-    .an:hover{background:var(--s2);border-color:var(--b2);color:var(--t1);transform:translateY(-1px)}
-    .an:active{transform:scale(.97)}
-    .an-i{
-        width:28px;height:28px;border-radius:8px;
-        background:var(--s2);border:1px solid var(--b1);
-        display:grid;place-items:center;flex-shrink:0;
-        transition:all var(--d);
+    .anm-info-title{
+        font-size:11px;
+        font-weight:600;
+        color:var(--t1);
+        margin-bottom:8px;
+        letter-spacing:.5px;
     }
-    .an-i svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-    .an:hover .an-i{background:var(--s3);border-color:var(--b2)}
+    .anm-info-text{
+        font-size:10px;
+        color:var(--t2);
+        line-height:1.5;
+    }
 
-    /* ═══════════════════════════════════════════════════════
-       FADE IN
-       ═══════════════════════════════════════════════════════ */
     @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
     .fi{animation:fi .3s var(--e) both}
 
-    /* ═══════════════════════════════════════════════════════
-       TABLET
-       ═══════════════════════════════════════════════════════ */
     @media(max-width:1100px){.panel{width:320px;right:16px;top:16px;bottom:16px}}
 
-    /* ═══════════════════════════════════════════════════════
-       ███ MOBILE ███
-       ═══════════════════════════════════════════════════════ */
     @media(max-width:768px){
         .brand{top:12px;left:14px;padding-top:env(safe-area-inset-top,0)}
         .brand b{font-size:10px;letter-spacing:2.5px}
@@ -260,10 +232,7 @@
 
         .btn-go{padding:12px;font-size:9px;letter-spacing:1.5px;border-radius:8px}
 
-        .anims{grid-template-columns:repeat(3,1fr);gap:4px}
-        .an{padding:10px 6px;font-size:8px;gap:5px;flex-direction:column;text-align:center;border-radius:8px}
-        .an-i{width:22px;height:22px;border-radius:6px}
-        .an-i svg{width:11px;height:11px}
+        .toast{bottom:20px;font-size:12px;padding:12px 24px}
     }
 
     @media(max-width:768px) and (orientation:landscape){
@@ -277,8 +246,6 @@
         .panel{max-height:46vh}
         .orb{width:26px;height:26px}
         .sw-lbl{font-size:6.5px}
-        .an{padding:8px 4px;font-size:7px}
-        .an-i{width:18px;height:18px}
     }
     </style>
 </head>
@@ -290,6 +257,9 @@
 </div>
 
 <div id="container3d_replace"></div>
+
+<!-- Toast para mostrar qué animación se activó -->
+<div class="toast" id="toast"></div>
 
 <div class="ui">
     <div class="brand"><b>Samsa Studio</b><small>Suitcase Configurator</small></div>
@@ -319,8 +289,13 @@
                 <button class="btn-go" id="bn">Next Step →</button>
             </div>
             <div id="v-anm" style="display:none">
-                <div class="hd" style="margin-top:16px"><span class="hd-title">Interactions</span></div>
-                <div class="anims" id="ag"></div>
+                <div class="anm-info">
+                    <div class="anm-info-title">🎬 Interactive Annotations</div>
+                    <div class="anm-info-text">
+                        Click directly on the hotspots in the 3D model to trigger animations.
+                        The annotations are now enabled and clickable!
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -330,21 +305,12 @@
 <script>
 var App=(function(){'use strict';
 
-/* ── SVG icons (inline, no external deps) ── */
 var ICO={
-    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    open:'<svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>',
-    close:'<svg viewBox="0 0 24 24"><path d="M17 7L7 17M7 17H16M7 17V8"/></svg>',
-    up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M12 5L5 12M12 5L19 12"/></svg>',
-    down:'<svg viewBox="0 0 24 24"><path d="M12 5V19M12 19L19 12M12 19L5 12"/></svg>',
-    spin:'<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-2.636-6.364"/><path d="M21 3v5h-5"/></svg>',
-    stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>'
+    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
-/* ── SDK ── */
 var SDK=Object.freeze({distID:'latest',solution3DName:'suitcase-color',projectName:'resources-for-videos-and-marketing-purposes',solution3DID:'62766',containerID:'container3d_replace'});
 
-/* ── Parts (pdf) ── */
 var P=Object.freeze({
     body:['Body_metal_base','Body_metal_cover'],
     handles:['Handle_base1','Handle_metal-1','Handle_telescope-1'],
@@ -353,7 +319,6 @@ var P=Object.freeze({
 });
 var PF=Object.freeze({body:['Body_Case'],handles:['Handles'],corners:['Corners'],wheels:['Wheels']});
 
-/* ── Materials (pdf) ── */
 var MB=Object.freeze([
     {k:'blue',n:'01 CHROME SATIN ROYAL BLUE',l:'Royal Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
     {k:'green',n:'02 CHROME SATIN OLIVE GREEN',l:'Olive Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
@@ -371,7 +336,6 @@ var MO=Object.freeze([
     {k:'green',n:'Chrome SATIN OLIVE GREEN',l:'Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
 ]);
 
-/* ── Cameras (pdf) ── */
 var CM=Object.freeze({
     body:{d:'camera_body',m:'camera_body_mobile'},
     handles:{d:'camera_handle',m:'camera_handle_mobile'},
@@ -379,17 +343,6 @@ var CM=Object.freeze({
     wheels:{d:'camera_wheels',m:'camera_wheels_mobile'}
 });
 
-/* ── Animations (pdf) ── */
-var AN=Object.freeze([
-    {l:'Open',m:'open',i:ICO.open},
-    {l:'Close',m:'close',i:ICO.close},
-    {l:'Extend Handle',m:'extend_handle',i:ICO.up},
-    {l:'Retract Handle',m:'retract_handle',i:ICO.down},
-    {l:'Spinner On',m:'wheel_spinner_on',i:ICO.spin},
-    {l:'Spinner Off',m:'wheel_spinner_off',i:ICO.stop}
-]);
-
-/* ── Dependencies (pdf) ── */
 var DP=Object.freeze({
     blue:['blue','black','aluminium'],green:['green','black','aluminium'],
     orange:['orange','black','aluminium'],red:['red','black','aluminium'],
@@ -397,21 +350,20 @@ var DP=Object.freeze({
 });
 
 var CS=['body','handles','corners','wheels'];
-var ci=0,mob=innerWidth<=768,rdy=false;
+var ci=0,mob=innerWidth<=768,rdy=false,curMode='cfg';
 var sel={body:'aluminium',handles:'aluminium',corners:'aluminium',wheels:'aluminium'};
 
-/* ── Build UI immediately ── */
-bCats();bAnims();render();
+bCats();render();
 
-/* ── SDK init ── */
 Unlimited3D.init(SDK);
 addEventListener('Unlimited3DReady',boot);
 var _t=setTimeout(function(){if(!rdy)boot()},8000);
 
 function boot(){
     if(rdy)return;rdy=true;clearTimeout(_t);
+    
     try{
-        // ✅ MEJORA: Camera restrictions para evitar clipping
+        // ✅ CRITICAL: Configurar controles de cámara
         if(Unlimited3D.setCameraControlsSettings){
             Unlimited3D.setCameraControlsSettings({
                 enableZoom:true,
@@ -421,17 +373,76 @@ function boot(){
                 maxDistance:8,
                 dampingFactor:0.15
             });
+            console.log('[Samsa] ✓ Camera restrictions applied');
         }
+        
+        // ✅ CRITICAL: Habilitar anotaciones clickeables
+        if(Unlimited3D.setAnnotationsClickable){
+            Unlimited3D.setAnnotationsClickable(true);
+            console.log('[Samsa] ✓ Annotations are now clickable');
+        }
+        
+        // ✅ CRITICAL: Escuchar clicks en anotaciones
+        if(Unlimited3D.onAnnotationClick){
+            Unlimited3D.onAnnotationClick = function(annotationName){
+                console.log('[Samsa] Annotation clicked:',annotationName);
+                handleAnnotationClick(annotationName);
+            };
+        }
+        
+        // Log scene info
         if(Unlimited3D.getSceneGraph)Unlimited3D.getSceneGraph(function(g){console.groupCollapsed('[Samsa] Scene');console.log(g);console.groupEnd()});
         if(Unlimited3D.getAvailableMaterials)Unlimited3D.getAvailableMaterials(function(e,m){if(!e&&m){console.groupCollapsed('[Samsa] Materials ('+m.length+')');m.forEach(function(x){console.log(x.name)});console.groupEnd()}});
+        
     }catch(e){console.warn('[Samsa] Init warning:',e)}
+    
     dcam();
     document.getElementById('ld').classList.add('hide');
-    // ✅ MEJORA: Enviar estado inicial a Shopify
+    
+    // Ocultar anotaciones en modo configurator
+    toggleAnnotations(false);
+    
     sendConfig();
 }
 
-/* ── SDK wrappers ── */
+// ✅ Manejo de clicks en anotaciones
+function handleAnnotationClick(name){
+    var modifierMap={
+        'Open':'open',
+        'Close':'close',
+        'Extend handle':'extend_handle',
+        'Retract handle':'retract_handle',
+        'Wheel spinner on':'wheel_spinner_on',
+        'Wheel spinner off':'wheel_spinner_off'
+    };
+    
+    var modifier = modifierMap[name];
+    if(modifier){
+        md(modifier);
+        showToast('🎬 ' + name);
+    }else{
+        console.warn('[Samsa] Unknown annotation:',name);
+    }
+}
+
+// ✅ Mostrar/ocultar anotaciones
+function toggleAnnotations(show){
+    try{
+        if(Unlimited3D.showAnnotations){
+            Unlimited3D.showAnnotations(show);
+            console.log('[Samsa] Annotations',show?'shown':'hidden');
+        }
+    }catch(e){console.warn('[Samsa] Toggle annotations error:',e)}
+}
+
+// ✅ Toast notification
+function showToast(msg){
+    var toast=document.getElementById('toast');
+    toast.textContent=msg;
+    toast.classList.add('show');
+    setTimeout(function(){toast.classList.remove('show')},2000);
+}
+
 function ap(cat,mat,cb){
     Unlimited3D.changeMaterial({parts:P[cat],material:mat},function(e){
         if(!e){if(cb)cb();return}
@@ -441,28 +452,40 @@ function ap(cat,mat,cb){
         })
     })
 }
+
 function md(n){
     try{
         Unlimited3D.activateModifier({modifier:n});
+        console.log('[Samsa] ✓ Modifier activated:',n);
     }catch(e){console.warn('[Samsa] Modifier error:',n,e)}
 }
+
 function dcam(){md(mob?'default_camera_mobile':'default_camera_desktop')}
 
-/* ── Tabs ── */
+// ✅ Tabs con manejo de anotaciones
 document.querySelectorAll('.tab').forEach(function(b){
     b.addEventListener('click',function(){
         document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});
         b.classList.add('on');
         var v=b.dataset.tab;
+        curMode=v;
+        
         document.getElementById('v-cfg').style.display=v==='cfg'?'':'none';
         document.getElementById('v-anm').style.display=v==='anm'?'':'none';
         pnl.classList.remove('min');
-        // ✅ MEJORA: Reset camera al cambiar tab
-        dcam();
+        
+        // ✅ CRITICAL: Mostrar/ocultar anotaciones según tab
+        if(v==='anm'){
+            toggleAnnotations(true);
+            dcam();
+            showToast('Click on hotspots in the 3D model');
+        }else{
+            toggleAnnotations(false);
+            dcam();
+        }
     })
 });
 
-/* ── Categories ── */
 function bCats(){
     var el=document.getElementById('cats');el.innerHTML='';
     CS.forEach(function(c,i){
@@ -473,6 +496,7 @@ function bCats(){
         el.appendChild(b)
     })
 }
+
 function go(c){
     ci=CS.indexOf(c);bCats();
     document.getElementById('htl').textContent=c.charAt(0).toUpperCase()+c.slice(1);
@@ -480,7 +504,6 @@ function go(c){
     render();pnl.classList.remove('min');
 }
 
-/* ── Colors ── */
 function render(){
     var g=document.getElementById('cg');g.innerHTML='';
     var c=CS[ci],list;
@@ -500,34 +523,35 @@ function render(){
     })
 }
 
-/* ── Pick ── */
 function pick(c,it){
     ap(c,it.n);sel[c]=it.k;
     if(c==='body'){
         var d=MO[0];['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium';ap(x,d.n)})
     }
     bCats();render();
-    // ✅ MEJORA: Enviar config actualizada a Shopify inmediatamente
     sendConfig();
 }
 
-/* ── Anims ── */
-function bAnims(){
-    var el=document.getElementById('ag');el.innerHTML='';
-    AN.forEach(function(a,i){
-        var b=document.createElement('button');
-        b.className='an fi';b.style.animationDelay=(i*.04)+'s';
-        b.innerHTML='<div class="an-i">'+a.i+'</div><span>'+a.l+'</span>';
-        b.addEventListener('click',function(){md(a.m)});
-        el.appendChild(b)
-    })
+function sendConfig(){
+    if(window.parent && window.parent!==window){
+        var readable={
+            body:MB.find(function(m){return m.k===sel.body}).l,
+            handles:MO.find(function(m){return m.k===sel.handles}).l,
+            corners:MO.find(function(m){return m.k===sel.corners}).l,
+            wheels:MO.find(function(m){return m.k===sel.wheels}).l
+        };
+        window.parent.postMessage({
+            type:'CONFIG_UPDATE',
+            payload:sel,
+            readable:readable,
+            timestamp:Date.now()
+        },'*');
+    }
 }
 
-/* ── Nav ── */
 document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length;go(CS[ci])});
 document.getElementById('bx').addEventListener('click',dcam);
 
-/* ── Mobile toggle ── */
 var pnl=document.getElementById('pnl');
 document.getElementById('hnd').addEventListener('click',function(){if(mob)pnl.classList.toggle('min')});
 if(mob)pnl.classList.add('min');
@@ -537,41 +561,17 @@ addEventListener('resize',function(){
     if(was!==mob){dcam();pnl.classList.remove('min')}
 });
 
-/* ── ✅ MEJORA: Comunicación con Shopify optimizada ── */
-function sendConfig(){
-    if(window.parent && window.parent !== window){
-        // Convertir keys a nombres legibles para Shopify
-        var readable = {
-            body: MB.find(function(m){return m.k===sel.body}).l,
-            handles: MO.find(function(m){return m.k===sel.handles}).l,
-            corners: MO.find(function(m){return m.k===sel.corners}).l,
-            wheels: MO.find(function(m){return m.k===sel.wheels}).l
-        };
-        window.parent.postMessage({
-            type:'CONFIG_UPDATE',
-            payload:sel,          // keys para lógica
-            readable:readable,    // nombres para display
-            timestamp:Date.now()
-        },'*');
-        console.log('[Samsa] → Shopify:',readable);
-    }
-}
-
-// Enviar estado cada 2 segundos (backup por si falla el envío inmediato)
 setInterval(sendConfig,2000);
 
 return Object.freeze({
     get state(){return Object.assign({},sel)},
     get readable(){
-        return {
-            body: MB.find(function(m){return m.k===sel.body}).l,
-            handles: MO.find(function(m){return m.k===sel.handles}).l,
-            corners: MO.find(function(m){return m.k===sel.corners}).l,
-            wheels: MO.find(function(m){return m.k===sel.wheels}).l
+        return{
+            body:MB.find(function(m){return m.k===sel.body}).l,
+            handles:MO.find(function(m){return m.k===sel.handles}).l,
+            corners:MO.find(function(m){return m.k===sel.corners}).l,
+            wheels:MO.find(function(m){return m.k===sel.wheels}).l
         }
-    },
-    inspect:function(){
-        try{Unlimited3D.getSceneGraph(function(g){console.log(g)})}catch(e){}
     }
 });
 })();
