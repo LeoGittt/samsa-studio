@@ -458,10 +458,10 @@ var ICO={
 var ACAM=Object.freeze({
     'open':              {d:'default_camera_desktop', m:'default_camera_mobile'},
     'close':             {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'extend_handle':     {d:'camera_handle',          m:'camera_handle_mobile'},
-    'retract_handle':    {d:'camera_handle',          m:'camera_handle_mobile'},
-    'wheel_spinner_on':  {d:'camera_wheels',          m:'camera_wheels_mobile'},
-    'wheel_spinner_off': {d:'camera_wheels',          m:'camera_wheels_mobile'}
+    'extend_handle':     {d:'camera_handle',          m:'default_camera_mobile'},
+    'retract_handle':    {d:'camera_handle',          m:'default_camera_mobile'},
+    'wheel_spinner_on':  {d:'camera_wheels',          m:'default_camera_mobile'},
+    'wheel_spinner_off': {d:'camera_wheels',          m:'default_camera_mobile'}
 });
 
 function resolveAnnotationModifier(raw){
@@ -491,10 +491,14 @@ var SDK={
         if(obj.type!=='annotation')return;
         var modifier=resolveAnnotationModifier(obj.shortName||obj.name);
         if(!modifier)return;
-        var cam=ACAM[modifier];
-        if(cam){md(mob?cam.m:cam.d);applyCamSettings();}
         md(modifier);
         showToast(obj.name||obj.shortName||modifier);
+        // Llamar cámara DESPUÉS de que termine la animación del modifier
+        var cam=ACAM[modifier];
+        if(cam){
+            var delay=modifier==='open'||modifier==='close'?1800:1000;
+            setTimeout(function(){md(mob?cam.m:cam.d);applyCamSettings();},delay);
+        }
     }
 };
 
@@ -524,10 +528,10 @@ var MO=Object.freeze([
 ]);
 
 var CM=Object.freeze({
-    body:{d:'camera_body',m:'camera_body_mobile'},
-    handles:{d:'camera_handle',m:'camera_handle_mobile'},
-    corners:{d:'camera_corners',m:'Camera_corners_mobile'},
-    wheels:{d:'camera_wheels',m:'camera_wheels_mobile'}
+    body:{d:'default_camera_desktop',m:'default_camera_mobile'},
+    handles:{d:'default_camera_desktop',m:'default_camera_mobile'},
+    corners:{d:'default_camera_desktop',m:'default_camera_mobile'},
+    wheels:{d:'default_camera_desktop',m:'default_camera_mobile'}
 });
 var DP=Object.freeze({
     blue:['blue','black','aluminium'],green:['green','black','aluminium'],
