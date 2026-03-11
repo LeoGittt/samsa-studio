@@ -60,15 +60,6 @@
     /* ─── UI shell ─── */
     .ui{position:fixed;inset:0;z-index:10;pointer-events:none}
 
-    /* ─── Brand ─── */
-    .brand{
-        position:absolute;top:22px;left:24px;
-        pointer-events:auto;user-select:none;
-        animation:fadeUp .6s var(--e) .4s both;
-    }
-    .brand b{display:block;font-weight:700;font-size:10.5px;letter-spacing:3.5px;text-transform:uppercase;color:var(--t1)}
-    .brand small{display:block;font-size:7.5px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-top:2px}
-
     /* ─── Toast ─── */
     .toast{
         position:fixed;bottom:28px;left:50%;
@@ -316,10 +307,6 @@
     @media(max-width:1100px){.panel{width:284px;right:14px;top:14px;bottom:14px}}
 
     @media(max-width:768px){
-        .brand{top:10px;left:14px;padding-top:env(safe-area-inset-top,0)}
-        .brand b{font-size:9.5px;letter-spacing:2.5px}
-        .brand small{display:none}
-
         .handle{display:flex}
         .btn-collapse,.panel-open-btn{display:none!important}
 
@@ -412,8 +399,6 @@
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-msg"></span></div>
 
 <div class="ui">
-    <div class="brand"><b>Samsa Studio</b><small>Suitcase Configurator</small></div>
-
     <button class="panel-open-btn" id="pob" aria-label="Open configurator">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -533,9 +518,21 @@ Unlimited3D.init(SDK);
 addEventListener('Unlimited3DReady',boot);
 var _t=setTimeout(function(){if(!rdy)boot()},5000);
 
+// ── Patch SDK: bloquea activateModifier durante rotaciones ──
+var _origActivate=null,_blockModifierUntil=0;
+function patchSDK(){
+    if(!Unlimited3D||!Unlimited3D.activateModifier)return;
+    _origActivate=Unlimited3D.activateModifier.bind(Unlimited3D);
+    Unlimited3D.activateModifier=function(opts){
+        if(Date.now()<_blockModifierUntil)return;
+        return _origActivate(opts);
+    };
+}
+
 function boot(){
     if(rdy)return;rdy=true;clearTimeout(_t);
     try{
+        patchSDK();
         if(Unlimited3D.setCameraControlsSettings){
             Unlimited3D.setCameraControlsSettings({
                 enableZoom:true,enablePan:false,enableRotate:true,
@@ -551,6 +548,16 @@ function boot(){
 }
 
 // ── Annotation handling ──
+// Cámara que se activa DESPUÉS del modifier para sobreescribir la cámara interna del SDK
+var ACAM=Object.freeze({
+    'open':              {d:'default_camera_desktop', m:'default_camera_mobile'},
+    'close':             {d:'default_camera_desktop', m:'default_camera_mobile'},
+    'extend_handle':     {d:'camera_handle',          m:'camera_handle_mobile'},
+    'retract_handle':    {d:'camera_handle',          m:'camera_handle_mobile'},
+    'wheel_spinner_on':  {d:'camera_wheels',          m:'camera_wheels_mobile'},
+    'wheel_spinner_off': {d:'camera_wheels',          m:'camera_wheels_mobile'}
+});
+var _blockUntil=0;
 function handleAnnotationResult(err,selected){
     if(!selected||!selected.length)return;
     var display=selected[0].name;
@@ -562,7 +569,12 @@ function handleAnnotationResult(err,selected){
     else if(name.includes('retract')) modifier='retract_handle';
     else if(name.includes('spinner')&&name.includes('on')) modifier='wheel_spinner_on';
     else if(name.includes('spinner')&&name.includes('off')) modifier='wheel_spinner_off';
-    if(modifier){md(modifier);showToast(display);}
+    if(!modifier)return;
+    _blockUntil=Date.now()+4000;
+    var cam=ACAM[modifier];
+    if(cam)md(mob?cam.m:cam.d); // cámara antes del modifier — un solo movimiento
+    md(modifier);
+    showToast(display);
 }
 
 function setupAnnotationClickHandler(){
@@ -573,15 +585,56 @@ function setupAnnotationClickHandler(){
         if(!canvas){setTimeout(setupAnnotationClickHandler,500);return;}
         var pending=false;
         function query(){
+            if(Date.now()<_blockUntil)return; // bloqueado post-activación
             if(pending)return;pending=true;
             setTimeout(function(){
                 pending=false;
                 Unlimited3D.getSelectedAnnotations(handleAnnotationResult);
             },mob?260:100);
         }
-        if(mob){canvas.addEventListener('touchend',query,{passive:true});}
-        else{canvas.addEventListener('click',query);}
-        console.log('[Samsa] ✓ Annotation handler (mob='+mob+')');
+        if(mob){
+            var _tx=0,_ty=0,_tstart=0,_wasMT=false;
+            // capture:true → nuestro listener corre ANTES que los del SDK (bubble)
+            canvas.addEventListener('touchstart',function(e){
+                if(e.touches.length>1){_wasMT=true;return;}
+                _tx=e.touches[0].clientX;_ty=e.touches[0].clientY;
+                _tstart=Date.now();_wasMT=false;
+            },{passive:true,capture:true});
+            canvas.addEventListener('touchend',function(e){
+                var drag=_wasMT;
+                if(!drag){
+                    var t=e.changedTouches[0];
+                    var dx=t.clientX-_tx,dy=t.clientY-_ty;
+                    drag=(dx*dx+dy*dy>225)||(Date.now()-_tstart>=350);
+                }
+                if(drag){
+                    _blockModifierUntil=Date.now()+500;
+                    return;
+                }
+                query();
+            },{capture:true}); // capture → interceptamos antes del handler del SDK
+        }else{
+            // Desktop: detectar drag por mouse para no disparar query en rotaciones
+            var _mx=0,_my=0,_mdrag=false;
+            canvas.addEventListener('mousedown',function(e){
+                _mx=e.clientX;_my=e.clientY;_mdrag=false;
+            });
+            canvas.addEventListener('mousemove',function(e){
+                if(_mdrag)return;
+                var dx=e.clientX-_mx,dy=e.clientY-_my;
+                if(dx*dx+dy*dy>25)_mdrag=true; // >5px = drag
+            });
+            canvas.addEventListener('mouseup',function(){
+                if(_mdrag){
+                    toggleAnnotations(false);
+                    setTimeout(function(){toggleAnnotations(true);},400);
+                }
+            });
+            canvas.addEventListener('click',function(){
+                if(_mdrag)return;
+                query();
+            });
+        }
     },1000);
 }
 
@@ -612,7 +665,8 @@ function ap(cat,mat,cb){
 }
 
 function md(n){
-    try{Unlimited3D.activateModifier({modifier:n});}
+    var fn=_origActivate||Unlimited3D.activateModifier.bind(Unlimited3D);
+    try{fn({modifier:n});}
     catch(e){console.warn('[Samsa] Modifier error:',n,e)}
 }
 function dcam(){md(mob?'default_camera_mobile':'default_camera_desktop')}
