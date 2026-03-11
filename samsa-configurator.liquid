@@ -1,0 +1,314 @@
+<div class="page-width" style="margin-top:60px; margin-bottom:60px;">
+
+  <h3 class="configurator-title">
+    Customize your suitcase 
+  </h3>
+
+  <div class="configurator-wrapper">
+    <iframe 
+      id="samsa-iframe"
+      src="https://maleta-3d-test.vercel.app/"
+      loading="lazy"
+      allow="fullscreen"
+    ></iframe>
+  </div>
+
+  <button 
+    id="add-configured"
+    class="button button--primary configurator-button"
+  >
+    Add configured suitcase
+  </button>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONFIG STATE - recibe data del iframe
+// ═══════════════════════════════════════════════════════
+let currentConfig = {
+  keys: {},      // { body: 'aluminium', handles: 'blue', ... }
+  readable: {}   // { body: 'Aluminium', handles: 'Blue', ... }
+};
+
+const variants = {{ product.variants | json }};
+
+// ═══════════════════════════════════════════════════════
+// RECEIVE MESSAGE del configurador 3D
+// ═══════════════════════════════════════════════════════
+window.addEventListener("message", function(event) {
+  // Validar origen si quieres más seguridad
+  // if (event.origin !== "https://maleta-3d-test.vercel.app") return;
+  
+  if (event.data.type === "CONFIG_UPDATE") {
+    currentConfig.keys = event.data.payload || {};
+    currentConfig.readable = event.data.readable || {};
+    
+    console.log("✓ Config actualizada:", currentConfig.readable);
+    
+    // Opcional: Mostrar preview de la config actual
+    updateConfigPreview();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// OPCIONAL: Mostrar preview de config actual (debajo del iframe)
+// ═══════════════════════════════════════════════════════
+function updateConfigPreview() {
+  const r = currentConfig.readable;
+  if (!r.body) return; // No hay config aún
+  
+  // Puedes descomentar esto si quieres mostrar la config actual:
+  /*
+  const preview = document.getElementById('config-preview');
+  if (preview) {
+    preview.innerHTML = `
+      <strong>Current Selection:</strong>
+      Body: ${r.body} | 
+      Handles: ${r.handles} | 
+      Corners: ${r.corners} | 
+      Wheels: ${r.wheels}
+    `;
+  }
+  */
+}
+
+// ═══════════════════════════════════════════════════════
+// ADD TO CART - con configuración personalizada
+// ═══════════════════════════════════════════════════════
+document.getElementById("add-configured").addEventListener("click", function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.innerText = "Adding...";
+
+  // Validar que haya configuración
+  if (!currentConfig.readable.body) {
+    alert("Please customize your suitcase first!");
+    btn.disabled = false;
+    btn.innerText = "Add configured suitcase";
+    return;
+  }
+
+  // Buscar variante basada en el color del BODY
+  const bodyColor = currentConfig.readable.body || "Aluminium";
+  
+  const selectedVariant = variants.find(v => {
+    if (!v.option1) return false;
+    
+    // Matching flexible (busca coincidencia parcial)
+    const opt = v.option1.toLowerCase();
+    const body = bodyColor.toLowerCase();
+    
+    return opt.includes(body) || body.includes(opt);
+  });
+
+  const variantId = selectedVariant ? selectedVariant.id : variants[0].id;
+
+  // Agregar al carrito con properties personalizadas
+  fetch("/cart/add.js", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      id: variantId,
+      quantity: 1,
+      properties: {
+        "Body Color": currentConfig.readable.body || "Not selected",
+        "Handles Color": currentConfig.readable.handles || "Not selected",
+        "Corners Color": currentConfig.readable.corners || "Not selected",
+        "Wheels Color": currentConfig.readable.wheels || "Not selected",
+        "_Customized": "Yes",
+        "_Timestamp": new Date().toLocaleString()
+      }
+    })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Cart error');
+    return res.json();
+  })
+  .then(data => {
+    console.log("✓ Added to cart:", data);
+    window.location.href = "/cart";
+  })
+  .catch(err => {
+    console.error("✗ Error adding to cart:", err);
+    alert("Error adding to cart. Please try again.");
+    btn.disabled = false;
+    btn.innerText = "Add configured suitcase";
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+// OPCIONAL: Pre-cargar iframe para mejor performance
+// ═══════════════════════════════════════════════════════
+const iframe = document.getElementById('samsa-iframe');
+iframe.addEventListener('load', function() {
+  console.log('✓ Configurador cargado');
+});
+</script>
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   CONFIGURATOR CONTAINER
+   ═══════════════════════════════════════════════════════ */
+.configurator-title {
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  font-size: 18px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.configurator-wrapper {
+  width: 100%;
+  height: 75vh;
+  max-height: 900px;
+  min-height: 500px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12);
+  background: #000; /* Match el fondo del configurador */
+  position: relative;
+}
+
+.configurator-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.configurator-button {
+  margin-top: 35px;
+  width: 100%;
+  max-width: 600px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.configurator-button:disabled {
+  opacity: 0.6;
+  cursor: not-loading;
+}
+
+/* ═══════════════════════════════════════════════════════
+   OPCIONAL: Config preview
+   ═══════════════════════════════════════════════════════ */
+#config-preview {
+  text-align: center;
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(0,0,0,0.03);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .configurator-wrapper {
+    height: 60vh;
+    min-height: 400px;
+    border-radius: 16px;
+  }
+  
+  .configurator-title {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .configurator-button {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .configurator-wrapper {
+    height: 55vh;
+    min-height: 350px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PRODUCT PAGE AESTHETICS
+   ═══════════════════════════════════════════════════════ */
+.product-information-content h1,
+.product-information-content .product__title {
+  font-size: 34px !important;
+  font-weight: 600 !important;
+}
+
+.product-information-content .price {
+  font-size: 28px !important;
+  font-weight: 500 !important;
+}
+
+.product-information-content .quantity {
+  border-radius: 14px !important;
+  overflow: hidden;
+  border: 1px solid #e8e8e8;
+}
+
+.product-information-content .quantity__button {
+  background: #f8f8f8 !important;
+  border: none !important;
+}
+
+.product-information-content .quantity__input {
+  border: none !important;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HIDE DEFAULT SHOPIFY BUTTONS
+   ═══════════════════════════════════════════════════════ */
+.product-form__submit,
+button[type="submit"][name="add"],
+.shopify-payment-button {
+  display: none !important;
+}
+</style>
+
+{% schema %}
+{
+  "name": "Samsa 3D Configurator",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "iframe_url",
+      "label": "Configurator URL",
+      "default": "https://maleta-3d-test.vercel.app/",
+      "info": "URL del configurador en Vercel"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Customize your suitcase"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Add configured suitcase"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Samsa 3D Configurator"
+    }
+  ]
+}
+{% endschema %}

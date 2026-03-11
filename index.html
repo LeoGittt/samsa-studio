@@ -411,11 +411,24 @@ var _t=setTimeout(function(){if(!rdy)boot()},8000);
 function boot(){
     if(rdy)return;rdy=true;clearTimeout(_t);
     try{
+        // ✅ MEJORA: Camera restrictions para evitar clipping
+        if(Unlimited3D.setCameraControlsSettings){
+            Unlimited3D.setCameraControlsSettings({
+                enableZoom:true,
+                enablePan:false,
+                enableRotate:true,
+                minDistance:2.5,
+                maxDistance:8,
+                dampingFactor:0.15
+            });
+        }
         if(Unlimited3D.getSceneGraph)Unlimited3D.getSceneGraph(function(g){console.groupCollapsed('[Samsa] Scene');console.log(g);console.groupEnd()});
         if(Unlimited3D.getAvailableMaterials)Unlimited3D.getAvailableMaterials(function(e,m){if(!e&&m){console.groupCollapsed('[Samsa] Materials ('+m.length+')');m.forEach(function(x){console.log(x.name)});console.groupEnd()}});
-    }catch(e){}
+    }catch(e){console.warn('[Samsa] Init warning:',e)}
     dcam();
     document.getElementById('ld').classList.add('hide');
+    // ✅ MEJORA: Enviar estado inicial a Shopify
+    sendConfig();
 }
 
 /* ── SDK wrappers ── */
@@ -428,7 +441,11 @@ function ap(cat,mat,cb){
         })
     })
 }
-function md(n){Unlimited3D.activateModifier({modifier:n})}
+function md(n){
+    try{
+        Unlimited3D.activateModifier({modifier:n});
+    }catch(e){console.warn('[Samsa] Modifier error:',n,e)}
+}
 function dcam(){md(mob?'default_camera_mobile':'default_camera_desktop')}
 
 /* ── Tabs ── */
@@ -440,6 +457,8 @@ document.querySelectorAll('.tab').forEach(function(b){
         document.getElementById('v-cfg').style.display=v==='cfg'?'':'none';
         document.getElementById('v-anm').style.display=v==='anm'?'':'none';
         pnl.classList.remove('min');
+        // ✅ MEJORA: Reset camera al cambiar tab
+        dcam();
     })
 });
 
@@ -487,7 +506,9 @@ function pick(c,it){
     if(c==='body'){
         var d=MO[0];['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium';ap(x,d.n)})
     }
-    bCats();render()
+    bCats();render();
+    // ✅ MEJORA: Enviar config actualizada a Shopify inmediatamente
+    sendConfig();
 }
 
 /* ── Anims ── */
@@ -516,20 +537,44 @@ addEventListener('resize',function(){
     if(was!==mob){dcam();pnl.classList.remove('min')}
 });
 
-return Object.freeze({get state(){return Object.assign({},sel)},inspect:function(){try{Unlimited3D.getSceneGraph(function(g){console.log(g)})}catch(e){}}});
+/* ── ✅ MEJORA: Comunicación con Shopify optimizada ── */
+function sendConfig(){
+    if(window.parent && window.parent !== window){
+        // Convertir keys a nombres legibles para Shopify
+        var readable = {
+            body: MB.find(function(m){return m.k===sel.body}).l,
+            handles: MO.find(function(m){return m.k===sel.handles}).l,
+            corners: MO.find(function(m){return m.k===sel.corners}).l,
+            wheels: MO.find(function(m){return m.k===sel.wheels}).l
+        };
+        window.parent.postMessage({
+            type:'CONFIG_UPDATE',
+            payload:sel,          // keys para lógica
+            readable:readable,    // nombres para display
+            timestamp:Date.now()
+        },'*');
+        console.log('[Samsa] → Shopify:',readable);
+    }
+}
+
+// Enviar estado cada 2 segundos (backup por si falla el envío inmediato)
+setInterval(sendConfig,2000);
+
+return Object.freeze({
+    get state(){return Object.assign({},sel)},
+    get readable(){
+        return {
+            body: MB.find(function(m){return m.k===sel.body}).l,
+            handles: MO.find(function(m){return m.k===sel.handles}).l,
+            corners: MO.find(function(m){return m.k===sel.corners}).l,
+            wheels: MO.find(function(m){return m.k===sel.wheels}).l
+        }
+    },
+    inspect:function(){
+        try{Unlimited3D.getSceneGraph(function(g){console.log(g)})}catch(e){}
+    }
+});
 })();
-// ---- SEND CONFIG TO SHOPIFY PARENT ----
-setInterval(function () {
-  if (window.parent) {
-    window.parent.postMessage(
-      {
-        type: "CONFIG_UPDATE",
-        payload: App.state
-      },
-      "*"
-    );
-  }
-}, 1000);
 </script>
 </body>
 </html>
