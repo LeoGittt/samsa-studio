@@ -454,14 +454,49 @@ var ICO={
     check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
-var SDK=Object.freeze({
+// ── Annotation camera map ──
+var ACAM=Object.freeze({
+    'open':              {d:'default_camera_desktop', m:'default_camera_mobile'},
+    'close':             {d:'default_camera_desktop', m:'default_camera_mobile'},
+    'extend_handle':     {d:'camera_handle',          m:'camera_handle_mobile'},
+    'retract_handle':    {d:'camera_handle',          m:'camera_handle_mobile'},
+    'wheel_spinner_on':  {d:'camera_wheels',          m:'camera_wheels_mobile'},
+    'wheel_spinner_off': {d:'camera_wheels',          m:'camera_wheels_mobile'}
+});
+
+function resolveAnnotationModifier(raw){
+    var n=(raw||'').toLowerCase();
+    if(n.includes('open')&&!n.includes('locker'))      return 'open';
+    if(n.includes('close')&&!n.includes('locker'))     return 'close';
+    if(n.includes('extend'))                           return 'extend_handle';
+    if(n.includes('retract'))                          return 'retract_handle';
+    if(n.includes('spinner')&&n.includes('on'))        return 'wheel_spinner_on';
+    if(n.includes('spinner')&&n.includes('off'))       return 'wheel_spinner_off';
+    return null;
+}
+
+var SDK={
     distID:'latest',
     solution3DName:'suitcase-color',
     projectName:'resources-for-videos-and-marketing-purposes',
     solution3DID:'62766',
     workspaceID:'93698',
-    containerID:'container3d_replace'
-});
+    containerID:'container3d_replace',
+    onLoadingChanged:function(isLoading){
+        if(!isLoading)applyCamSettings(); // aplicar cuando el modelo termina de cargar
+    },
+    onPointerClick:function(objects){
+        if(!objects||!objects.length)return;
+        var obj=objects[0];
+        if(obj.type!=='annotation')return;
+        var modifier=resolveAnnotationModifier(obj.shortName||obj.name);
+        if(!modifier)return;
+        var cam=ACAM[modifier];
+        if(cam){md(mob?cam.m:cam.d);applyCamSettings();}
+        md(modifier);
+        showToast(obj.name||obj.shortName||modifier);
+    }
+};
 
 var P=Object.freeze({
     body:['Body_metal_base','Body_metal_cover'],
@@ -515,129 +550,28 @@ Unlimited3D.init(SDK);
 addEventListener('Unlimited3DReady',boot);
 var _t=setTimeout(function(){if(!rdy)boot()},5000);
 
-// ── Patch SDK: bloquea activateModifier durante rotaciones ──
-var _origActivate=null,_blockModifierUntil=0;
-function patchSDK(){
-    if(!Unlimited3D||!Unlimited3D.activateModifier)return;
-    _origActivate=Unlimited3D.activateModifier.bind(Unlimited3D);
-    Unlimited3D.activateModifier=function(opts){
-        if(Date.now()<_blockModifierUntil)return;
-        return _origActivate(opts);
-    };
+// Re-aplicar límites de cámara después de cada modifier de cámara
+// (los modifiers resetean los controls del SDK)
+function applyCamSettings(){
+    try{
+        if(Unlimited3D.setCameraControlsSettings){
+            Unlimited3D.setCameraControlsSettings({
+                enableZoom:true,enablePan:false,enableRotate:true,
+                minDistance:6,maxDistance:8,dampingFactor:0.15,
+                minPolarAngle:0.5,maxPolarAngle:1.7
+            });
+        }
+    }catch(e){}
 }
 
 function boot(){
     if(rdy)return;rdy=true;clearTimeout(_t);
     try{
-        patchSDK();
-        if(Unlimited3D.setCameraControlsSettings){
-            Unlimited3D.setCameraControlsSettings({
-                enableZoom:true,enablePan:false,enableRotate:true,
-                minDistance:4,maxDistance:7,dampingFactor:0.15
-            });
-        }
-        toggleAnnotations(true);
-        setupAnnotationClickHandler();
+        if(Unlimited3D.showAnnotations)Unlimited3D.showAnnotations(true);
     }catch(e){console.warn('[Samsa] Init warning:',e)}
     dcam();
     document.getElementById('ld').classList.add('hide');
     sendConfig();
-}
-
-// ── Annotation handling ──
-// Cámara que se activa DESPUÉS del modifier para sobreescribir la cámara interna del SDK
-var ACAM=Object.freeze({
-    'open':              {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'close':             {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'extend_handle':     {d:'camera_handle',          m:'camera_handle_mobile'},
-    'retract_handle':    {d:'camera_handle',          m:'camera_handle_mobile'},
-    'wheel_spinner_on':  {d:'camera_wheels',          m:'camera_wheels_mobile'},
-    'wheel_spinner_off': {d:'camera_wheels',          m:'camera_wheels_mobile'}
-});
-var _blockUntil=0;
-function handleAnnotationResult(err,selected){
-    if(!selected||!selected.length)return;
-    var display=selected[0].name;
-    var name=display.toLowerCase();
-    var modifier=null;
-    if(name.includes('open')&&!name.includes('locker')) modifier='open';
-    else if(name.includes('close')&&!name.includes('locker')) modifier='close';
-    else if(name.includes('extend')) modifier='extend_handle';
-    else if(name.includes('retract')) modifier='retract_handle';
-    else if(name.includes('spinner')&&name.includes('on')) modifier='wheel_spinner_on';
-    else if(name.includes('spinner')&&name.includes('off')) modifier='wheel_spinner_off';
-    if(!modifier)return;
-    _blockUntil=Date.now()+4000;
-    var cam=ACAM[modifier];
-    if(cam)md(mob?cam.m:cam.d); // cámara antes del modifier — un solo movimiento
-    md(modifier);
-    showToast(display);
-}
-
-function setupAnnotationClickHandler(){
-    setTimeout(function(){
-        var canvas=document.querySelector('canvas[data-engine*="three"]')
-                 ||document.querySelector('#container3d_replace canvas')
-                 ||document.querySelector('canvas');
-        if(!canvas){setTimeout(setupAnnotationClickHandler,500);return;}
-        var pending=false;
-        function query(){
-            if(Date.now()<_blockUntil)return; // bloqueado post-activación
-            if(pending)return;pending=true;
-            setTimeout(function(){
-                pending=false;
-                Unlimited3D.getSelectedAnnotations(handleAnnotationResult);
-            },mob?260:100);
-        }
-        if(mob){
-            var _tx=0,_ty=0,_tstart=0,_wasMT=false;
-            // capture:true → nuestro listener corre ANTES que los del SDK (bubble)
-            canvas.addEventListener('touchstart',function(e){
-                if(e.touches.length>1){_wasMT=true;return;}
-                _tx=e.touches[0].clientX;_ty=e.touches[0].clientY;
-                _tstart=Date.now();_wasMT=false;
-            },{passive:true,capture:true});
-            canvas.addEventListener('touchend',function(e){
-                var drag=_wasMT;
-                if(!drag){
-                    var t=e.changedTouches[0];
-                    var dx=t.clientX-_tx,dy=t.clientY-_ty;
-                    drag=(dx*dx+dy*dy>225)||(Date.now()-_tstart>=350);
-                }
-                if(drag){
-                    _blockModifierUntil=Date.now()+500;
-                    return;
-                }
-                query();
-            },{capture:true}); // capture → interceptamos antes del handler del SDK
-        }else{
-            // Desktop: detectar drag por mouse para no disparar query en rotaciones
-            var _mx=0,_my=0,_mdrag=false;
-            canvas.addEventListener('mousedown',function(e){
-                _mx=e.clientX;_my=e.clientY;_mdrag=false;
-            });
-            canvas.addEventListener('mousemove',function(e){
-                if(_mdrag)return;
-                var dx=e.clientX-_mx,dy=e.clientY-_my;
-                if(dx*dx+dy*dy>25)_mdrag=true; // >5px = drag
-            });
-            canvas.addEventListener('mouseup',function(){
-                if(_mdrag){
-                    toggleAnnotations(false);
-                    setTimeout(function(){toggleAnnotations(true);},400);
-                }
-            });
-            canvas.addEventListener('click',function(){
-                if(_mdrag)return;
-                query();
-            });
-        }
-    },1000);
-}
-
-function toggleAnnotations(show){
-    try{if(Unlimited3D.showAnnotations)Unlimited3D.showAnnotations(show);}
-    catch(e){}
 }
 
 // ── Toast ──
@@ -662,11 +596,13 @@ function ap(cat,mat,cb){
 }
 
 function md(n){
-    var fn=_origActivate||Unlimited3D.activateModifier.bind(Unlimited3D);
-    try{fn({modifier:n});}
+    try{Unlimited3D.activateModifier({modifier:n});}
     catch(e){console.warn('[Samsa] Modifier error:',n,e)}
 }
-function dcam(){md(mob?'default_camera_mobile':'default_camera_desktop')}
+function dcam(){
+    md(mob?'default_camera_mobile':'default_camera_desktop');
+    applyCamSettings();
+}
 
 // ── UI builders ──
 function bCats(){
@@ -684,7 +620,7 @@ function bCats(){
 function go(c){
     ci=CS.indexOf(c);bCats();
     document.getElementById('htl').textContent=c.charAt(0).toUpperCase()+c.slice(1);
-    var cm=CM[c];if(cm)md(mob?cm.m:cm.d);
+    var cm=CM[c];if(cm){md(mob?cm.m:cm.d);applyCamSettings();}
     render();
     if(mob)pnl.classList.remove('min');
     updateNextBtn();
