@@ -153,6 +153,24 @@
     .btn-collapse:hover{background:var(--s3);color:var(--t1);transform:scale(1.1)}
     .btn-collapse:active{transform:scale(.9)}
 
+    /* ─── Mode tabs (Configurator / Animations) ─── */
+    .mode-tabs{
+        display:grid;grid-template-columns:1fr 1fr;gap:3px;
+        background:var(--s1);border-radius:9px;padding:3px;
+        margin-bottom:10px;
+    }
+    .mode-tab{
+        padding:7px 4px;border-radius:6px;
+        font-size:8px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+        color:var(--t3);text-align:center;
+        transition:all var(--d) var(--e);
+    }
+    .mode-tab.on{
+        background:var(--panel);color:var(--t1);
+        box-shadow:0 1px 4px rgba(0,0,0,.08);
+    }
+    .mode-tab:hover:not(.on){color:var(--t2)}
+
     /* ─── Category tabs ─── */
     .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:0}
     .cat{
@@ -172,6 +190,7 @@
     /* ─── Scroll area ─── */
     .scroll{flex:1;overflow-y:auto;padding:12px 12px 14px;scrollbar-width:none}
     .scroll::-webkit-scrollbar{display:none}
+    .scroll.hidden{display:none}
 
     /* ─── Section header ─── */
     .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -261,6 +280,40 @@
     .btn-go-arrow{transition:transform .2s var(--es)}
     .btn-go:hover .btn-go-arrow{transform:translateX(3px)}
 
+    /* ─── Animations panel ─── */
+    .ann-grid{
+        display:grid;grid-template-columns:1fr 1fr;gap:6px;
+        margin-bottom:12px;
+    }
+    .ann-btn{
+        padding:13px 8px 11px;border-radius:10px;
+        border:1px solid var(--b1);
+        display:flex;flex-direction:column;align-items:center;gap:7px;
+        font-size:7.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+        color:var(--t2);text-align:center;
+        background:var(--s1);
+        transition:background var(--d) var(--e),color var(--d) var(--e),
+                   border-color var(--d) var(--e),transform .18s var(--es);
+    }
+    .ann-btn:hover{background:var(--s2);color:var(--t1);transform:translateY(-1px)}
+    .ann-btn:active{transform:scale(.97)}
+    .ann-btn.flash{background:var(--t1);color:#fff;border-color:transparent}
+    .ann-btn.on{background:var(--t1);color:#fff;border-color:transparent}
+    .ann-btn.on:hover{opacity:.87;transform:translateY(-1px)}
+    .ann-icon{
+        width:32px;height:32px;border-radius:50%;
+        background:rgba(0,0,0,.05);
+        display:grid;place-items:center;
+        transition:background var(--d) var(--e);
+        flex-shrink:0;
+    }
+    .ann-icon svg{width:14px;height:14px}
+    .ann-btn:hover .ann-icon{background:rgba(0,0,0,.08)}
+    .ann-btn.flash .ann-icon,.ann-btn.on .ann-icon{background:rgba(255,255,255,.15)}
+    /* HTML annotation spans full width */
+    .ann-btn.full{grid-column:1/-1;flex-direction:row;gap:10px;padding:11px 14px}
+    .ann-btn.full .ann-icon{width:26px;height:26px;flex-shrink:0}
+
     /* ─── Global keyframes ─── */
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     @keyframes orbIn{
@@ -269,6 +322,11 @@
         100%{opacity:1;transform:translateY(0) scale(1)}
     }
     .sw{animation:orbIn .32s var(--es) both}
+    @keyframes annIn{
+        0%{opacity:0;transform:translateY(6px) scale(.94)}
+        100%{opacity:1;transform:translateY(0) scale(1)}
+    }
+    .ann-btn{animation:annIn .28s var(--es) both}
 
     /* ─── Breakpoints ─── */
     @media(min-width:1200px){.panel{width:268px}}
@@ -279,7 +337,6 @@
         .handle{display:flex}
         .btn-collapse{display:none!important}
 
-        /* Botón reabrir — pill pequeño centrado en la parte inferior */
         .panel-open-btn{
             display:none;
             position:fixed!important;
@@ -305,7 +362,7 @@
             position:fixed!important;
             top:auto!important;right:0!important;left:0!important;bottom:0!important;
             width:100%!important;height:auto;
-            max-height:48vh;
+            max-height:52vh;
             border-radius:20px 20px 0 0;border-bottom:none;
             padding-bottom:env(safe-area-inset-bottom,0);
             background:rgba(255,255,255,.96);
@@ -332,6 +389,8 @@
 
         .scroll{padding:8px 14px 16px}
 
+        .mode-tabs{margin-bottom:8px}
+
         .cats{grid-template-columns:repeat(4,1fr);gap:5px}
         .cat{padding:6px 2px 7px;gap:4px;border-radius:8px;font-size:7.5px}
 
@@ -357,6 +416,12 @@
 
         .btn-go{padding:11px;font-size:9px;letter-spacing:1.5px;border-radius:9px}
         .toast{bottom:20px;font-size:11px;padding:8px 16px 8px 12px}
+
+        .ann-grid{grid-template-columns:repeat(3,1fr);gap:5px}
+        .ann-btn{padding:10px 4px 9px;gap:5px;border-radius:9px}
+        .ann-icon{width:28px;height:28px}
+        .ann-icon svg{width:12px;height:12px}
+        .ann-btn.full{grid-column:1/-1}
     }
 
     @media(max-width:768px) and (orientation:landscape){
@@ -370,12 +435,14 @@
         .handle{display:none}
         .panel.min{transform:none;opacity:1;pointer-events:auto}
         .grid{grid-template-columns:repeat(3,1fr)}
+        .ann-grid{grid-template-columns:1fr 1fr}
     }
 
     @media(max-width:390px){
-        .panel{max-height:52vh}
+        .panel{max-height:55vh}
         .orb{width:30px;height:30px}
         .sw-lbl{font-size:7px}
+        .ann-grid{grid-template-columns:1fr 1fr}
     }
     </style>
 </head>
@@ -390,12 +457,10 @@
 
 <div class="ui">
     <button class="panel-open-btn" id="pob" aria-label="Open configurator">
-        <!-- desktop icon -->
         <svg class="pob-icon-desk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
         </svg>
-        <!-- mobile: sliders icon + label -->
         <svg class="pob-icon-mob" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
             <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="2" fill="currentColor" stroke="none"/>
@@ -410,23 +475,32 @@
 
         <div class="panel-header">
             <div class="ph-row">
-                <span class="panel-label">Configurator</span>
+                <span class="panel-label">Samsa Studio</span>
                 <button class="btn-collapse" id="bcol" aria-label="Hide panel">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
                         <polyline points="9 18 15 12 9 6"/>
                     </svg>
                 </button>
             </div>
+
+            <!-- ── Mode switcher: Configurator / Animations ── -->
+            <div class="mode-tabs">
+                <button class="mode-tab on" id="tab-cfg">Configurator</button>
+                <button class="mode-tab"    id="tab-anim">Animations</button>
+            </div>
+
+            <!-- Category tabs — visible only in configurator mode -->
             <div class="cats" id="cats"></div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="scroll">
+        <!-- ── Configurator scroll area ── -->
+        <div class="scroll" id="scroll-cfg">
             <div class="hd">
                 <div class="hd-left">
                     <span class="hd-title" id="htl">Body</span>
-                    <span class="hd-sub" id="hct"></span>
+                    <span class="hd-sub"   id="hct"></span>
                 </div>
                 <button class="btn-cam" id="bx" aria-label="Reset camera">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -443,6 +517,23 @@
                 </span>
             </button>
         </div>
+
+        <!-- ── Animations scroll area ── -->
+        <div class="scroll hidden" id="scroll-anim">
+            <div class="hd">
+                <div class="hd-left">
+                    <span class="hd-title">Animations</span>
+                    <span class="hd-sub" id="ann-sub">Select an action</span>
+                </div>
+                <button class="btn-cam" id="bx-anim" aria-label="Reset camera">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="ann-grid" id="ann-grid"></div>
+        </div>
     </div>
 </div>
 
@@ -451,27 +542,56 @@
 var App=(function(){'use strict';
 
 var ICO={
-    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    // Annotation icons (inline SVG)
+    open:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l14 9-14 9V3z"/></svg>',
+    close:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>',
+    html:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    extend:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>',
+    retract:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>',
+    spinOn:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v3M12 19v3M2 12H5M19 12h3"/></svg>',
+    spinOff:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>'
 };
 
-// ── Annotation camera map ──
+// ── Annotation state tracking (grupos mutuamente excluyentes) ──
+var ANN_GROUP={
+    'open':'suitcase',        'close':'suitcase',
+    'extend_handle':'handle', 'retract_handle':'handle',
+    'spinner_on':'spinner',   'spinner_off':'spinner'
+};
+var annActive={suitcase:null, handle:null, spinner:null};
+
+// ── Annotation definitions ──
+// annName: nombre exacto en el modelo 3D | annPair: anotación a mostrar al ejecutar esta
+var ANNS=[
+    {key:'open',          label:'Open',             icon:ICO.open,    mod:'open',             cam:{d:'default_camera_desktop',m:'default_camera_mobile'}, delay:1800, annName:'Open',             annPair:'Close'},
+    {key:'close',         label:'Close',            icon:ICO.close,   mod:'close',            cam:{d:'default_camera_desktop',m:'default_camera_mobile'}, delay:1800, annName:'Close',            annPair:'Open'},
+    {key:'html',          label:'HTML',             icon:ICO.html,    mod:null,               cam:null,                                                   delay:0,    full:true},
+    {key:'extend_handle', label:'Extend Handle',    icon:ICO.extend,  mod:'extend_handle',    cam:{d:'camera_handle',         m:'camera_handle_mobile'},  delay:1000, annName:'Extend handle',    annPair:'Retract handle'},
+    {key:'retract_handle',label:'Retract Handle',   icon:ICO.retract, mod:'retract_handle',   cam:{d:'camera_handle',         m:'camera_handle_mobile'},  delay:1000, annName:'Retract handle',   annPair:'Extend handle'},
+    {key:'spinner_on',    label:'Wheel Spinner On', icon:ICO.spinOn,  mod:'wheel_spinner_on', cam:{d:'camera_wheels',         m:'camera_wheels_mobile'},  delay:1000, annName:'Wheel spinner on', annPair:'Wheel spinner off'},
+    {key:'spinner_off',   label:'Wheel Spinner Off',icon:ICO.spinOff, mod:'wheel_spinner_off',cam:{d:'camera_wheels',         m:'camera_wheels_mobile'},  delay:1000, annName:'Wheel spinner off',annPair:'Wheel spinner on'}
+];
+
+// ── Camera map for annotation clicks on 3D model ──
 var ACAM=Object.freeze({
-    'open':              {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'close':             {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'extend_handle':     {d:'camera_handle',          m:'default_camera_mobile'},
-    'retract_handle':    {d:'camera_handle',          m:'default_camera_mobile'},
-    'wheel_spinner_on':  {d:'camera_wheels',          m:'default_camera_mobile'},
-    'wheel_spinner_off': {d:'camera_wheels',          m:'default_camera_mobile'}
+    'open':         {d:'default_camera_desktop', m:'default_camera_mobile'},
+    'close':        {d:'default_camera_desktop', m:'default_camera_mobile'},
+    'extend_handle':{d:'camera_handle',          m:'camera_handle_mobile'},
+    'retract_handle':{d:'camera_handle',         m:'camera_handle_mobile'},
+    'spinner_on':   {d:'camera_wheels',          m:'camera_wheels_mobile'},
+    'spinner_off':  {d:'camera_wheels',          m:'camera_wheels_mobile'}
 });
 
 function resolveAnnotationModifier(raw){
     var n=(raw||'').toLowerCase();
-    if(n.includes('open')&&!n.includes('locker'))      return 'open';
-    if(n.includes('close')&&!n.includes('locker'))     return 'close';
-    if(n.includes('extend'))                           return 'extend_handle';
-    if(n.includes('retract'))                          return 'retract_handle';
-    if(n.includes('spinner')&&n.includes('on'))        return 'wheel_spinner_on';
-    if(n.includes('spinner')&&n.includes('off'))       return 'wheel_spinner_off';
+    if(n==='html')                                         return 'html';
+    if(n.includes('open')&&!n.includes('locker'))          return 'open';
+    if(n.includes('close')&&!n.includes('locker'))         return 'close';
+    if(n.includes('extend'))                               return 'extend_handle';
+    if(n.includes('retract'))                              return 'retract_handle';
+    if(n.includes('spinner')&&n.includes('on'))            return 'spinner_on';
+    if(n.includes('spinner')&&n.includes('off'))           return 'spinner_off';
     return null;
 }
 
@@ -483,79 +603,82 @@ var SDK={
     workspaceID:'93698',
     containerID:'container3d_replace',
     onLoadingChanged:function(isLoading){
-        if(!isLoading)applyCamSettings(); // aplicar cuando el modelo termina de cargar
+        if(!isLoading)applyCamSettings();
     },
     onPointerClick:function(objects){
         if(!objects||!objects.length)return;
         var obj=objects[0];
-        if(obj.type!=='annotation')return;
-        var modifier=resolveAnnotationModifier(obj.shortName||obj.name);
-        if(!modifier)return;
-        md(modifier);
-        showToast(obj.name||obj.shortName||modifier);
-        // Llamar cámara DESPUÉS de que termine la animación del modifier
-        var cam=ACAM[modifier];
-        if(cam){
-            var delay=modifier==='open'||modifier==='close'?1800:1000;
-            setTimeout(function(){md(mob?cam.m:cam.d);applyCamSettings();},delay);
-        }
+        // No filtramos por obj.type: distintas versiones del SDK pueden
+        // devolver 'annotation', 'html', 'hotspot', etc.
+        var key=resolveAnnotationModifier(obj.shortName||obj.name);
+        if(!key)return;
+        triggerAnnotation(key,obj.name||obj.shortName||key);
     }
 };
 
+// ── Part names per category ──
 var P=Object.freeze({
-    body:['Body_metal_base','Body_metal_cover'],
-    handles:['Handle_base1','Handle_metal-1','Handle_telescope-1'],
-    corners:['Corners_base','Corners_cover'],
-    wheels:['Wheels_base','Wheels_base_cover','Wheels_front_right_base','Wheels_front_left_base','Wheels_back_right_base','Wheels_back_left_base','Wheels_front_right_center','Wheels_front_left_center','Wheels_back_right_center','Wheels_back_left_centar']
+    body:    ['Body_metal_base','Body_metal_cover'],
+    handles: ['Handle_base1','Handle_metal-1','Handle_telescope-1'],
+    corners: ['Corners_base','Corners_cover'],
+    wheels:  ['Wheels_base','Wheels_base_cover','Wheels_front_right_base','Wheels_front_left_base',
+              'Wheels_back_right_base','Wheels_back_left_base','Wheels_front_right_center',
+              'Wheels_front_left_center','Wheels_back_right_center','Wheels_back_left_centar']
 });
 var PF=Object.freeze({body:['Body_Case'],handles:['Handles'],corners:['Corners'],wheels:['Wheels']});
 
+// ── Materials ──
 var MB=Object.freeze([
-    {k:'blue',n:'01 CHROME SATIN ROYAL BLUE',l:'Royal Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
-    {k:'green',n:'02 CHROME SATIN OLIVE GREEN',l:'Olive Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
-    {k:'orange',n:'03 CHROME SATIN BURNT ORANGE',l:'Burnt Orange',g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
-    {k:'red',n:'04 CHROME SATIN CHERRY RED',l:'Cherry Red',g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
-    {k:'black',n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
-    {k:'aluminium',n:'06 CHROME SATIN ALUMINUM',l:'Aluminium',g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'}
+    {k:'blue',      n:'01 CHROME SATIN ROYAL BLUE',    l:'Royal Blue',    g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {k:'green',     n:'02 CHROME SATIN OLIVE GREEN',   l:'Olive Green',   g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
+    {k:'orange',    n:'03 CHROME SATIN BURNT ORANGE',  l:'Burnt Orange',  g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {k:'red',       n:'04 CHROME SATIN CHERRY RED',    l:'Cherry Red',    g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {k:'black',     n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {k:'aluminium', n:'06 CHROME SATIN ALUMINUM',      l:'Aluminium',     g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'}
 ]);
 var MO=Object.freeze([
-    {k:'aluminium',n:'Chrome ALUMINIUM',l:'Aluminium',g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'},
-    {k:'black',n:'Chrome MIDNIGHT BLACK',l:'Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
-    {k:'red',n:'Chrome CHERRY RED',l:'Red',g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
-    {k:'blue',n:'Chrome ROYAL BLUE',l:'Blue',g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
-    {k:'orange',n:'Chrome SATIN BURNT ORANGE',l:'Orange',g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
-    {k:'green',n:'Chrome SATIN OLIVE GREEN',l:'Green',g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
+    {k:'aluminium', n:'Chrome ALUMINIUM',          l:'Aluminium', g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'},
+    {k:'black',     n:'Chrome MIDNIGHT BLACK',     l:'Black',     g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {k:'red',       n:'Chrome CHERRY RED',         l:'Red',       g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {k:'blue',      n:'Chrome ROYAL BLUE',         l:'Blue',      g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {k:'orange',    n:'Chrome SATIN BURNT ORANGE', l:'Orange',    g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {k:'green',     n:'Chrome SATIN OLIVE GREEN',  l:'Green',     g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
 ]);
 
+// ── Camera modifiers per category (FIXED) ──
 var CM=Object.freeze({
-    body:{d:'default_camera_desktop',m:'default_camera_mobile'},
-    handles:{d:'default_camera_desktop',m:'default_camera_mobile'},
-    corners:{d:'default_camera_desktop',m:'default_camera_mobile'},
-    wheels:{d:'default_camera_desktop',m:'default_camera_mobile'}
+    body:    {d:'camera_body',    m:'camera_body_mobile'},
+    handles: {d:'camera_handle',  m:'camera_handle_mobile'},
+    corners: {d:'camera_corners', m:'Camera_corners_mobile'},
+    wheels:  {d:'camera_wheels',  m:'camera_wheels_mobile'}
 });
+
+// ── Dependency map ──
 var DP=Object.freeze({
-    blue:['blue','black','aluminium'],green:['green','black','aluminium'],
-    orange:['orange','black','aluminium'],red:['red','black','aluminium'],
-    black:['black','aluminium'],aluminium:['black','aluminium']
+    blue:['blue','black','aluminium'],  green:['green','black','aluminium'],
+    orange:['orange','black','aluminium'], red:['red','black','aluminium'],
+    black:['black','aluminium'],        aluminium:['black','aluminium']
 });
 
 var CS=['body','handles','corners','wheels'];
-var ci=0,mob=innerWidth<=768,rdy=false;
+var ci=0, mob=innerWidth<=768, rdy=false, mode='cfg';
 var sel={body:'aluminium',handles:'aluminium',corners:'aluminium',wheels:'aluminium'};
 
-// Gradients map for category dots
 var allMats={};
 MB.forEach(function(m){allMats[m.k]=m.g});
 MO.forEach(function(m){allMats[m.k]=m.g});
 
-bCats();render();
+bCats(); render(); buildAnims();
 
-Unlimited3D.init(SDK);
+// Ocultar las anotaciones "de resultado" desde el inicio via configuración oficial
+Unlimited3D.init(SDK, {
+    annotations:{
+        hide:['Close','Retract handle','Wheel spinner off']
+    }
+});
 addEventListener('Unlimited3DReady',boot);
 var _t=setTimeout(function(){if(!rdy)boot()},5000);
 
-// Re-aplicar límites de cámara después de cada modifier de cámara
-// (los modifiers resetean los controls del SDK)
 function applyCamSettings(){
     try{
         if(Unlimited3D.setCameraControlsSettings){
@@ -568,11 +691,41 @@ function applyCamSettings(){
     }catch(e){}
 }
 
-function boot(){
-    if(rdy)return;rdy=true;clearTimeout(_t);
+// Muestra una anotación (ya estaba en escena, solo oculta)
+function showAnn(name){
     try{
-        if(Unlimited3D.showAnnotations)Unlimited3D.showAnnotations(true);
-    }catch(e){console.warn('[Samsa] Init warning:',e)}
+        Unlimited3D.showAnnotations({
+            annotationObjects:[{annotations:[name]}]
+        }, function(err){ if(err) console.warn('[Samsa] showAnn:',err); });
+    }catch(e){ console.warn('[Samsa] showAnn exception:',e); }
+}
+// Oculta una anotación
+function hideAnn(name){
+    try{
+        Unlimited3D.hideAnnotations({
+            annotations:[name]
+        }, function(err){ if(err) console.warn('[Samsa] hideAnn:',err); });
+    }catch(e){ console.warn('[Samsa] hideAnn exception:',e); }
+}
+
+// Tras ejecutar una animación: oculta la anotación actual y muestra la opuesta
+function refreshAnnotations(ann){
+    if(!ann||!ann.annName||!ann.annPair) return;
+    // Primero mostrar la opuesta (native, clickeable porque estuvo en escena desde init)
+    showAnn(ann.annPair);
+    // Luego ocultar la actual
+    setTimeout(function(){ hideAnn(ann.annName); }, 100);
+}
+
+function boot(){
+    if(rdy)return; rdy=true; clearTimeout(_t);
+    // Igualar material visual de spinners al resto de anotaciones
+    try{
+        Unlimited3D.changeAnnotationMaterial({
+            annotations:['Wheel spinner on','Wheel spinner off'],
+            material:'Rimowa-Black'
+        });
+    }catch(e){}
     dcam();
     document.getElementById('ld').classList.add('hide');
     sendConfig();
@@ -594,7 +747,7 @@ function ap(cat,mat,cb){
         if(!e){if(cb)cb();return}
         Unlimited3D.changeMaterials({partObjects:[{parts:P[cat],material:mat}]},function(e2){
             if(!e2){if(cb)cb();return}
-            var f=PF[cat];if(f)Unlimited3D.changeMaterial({parts:f,material:mat},function(){if(cb)cb()})
+            var f=PF[cat]; if(f)Unlimited3D.changeMaterial({parts:f,material:mat},function(){if(cb)cb()})
         })
     })
 }
@@ -608,23 +761,108 @@ function dcam(){
     applyCamSettings();
 }
 
+// ── Trigger annotation (from UI button or 3D click) ──
+function triggerAnnotation(key, label){
+    var ann=ANNS.find(function(a){return a.key===key});
+
+    // HTML annotation: no tiene modifier, solo feedback visual
+    if(key==='html'){
+        showToast(label||'HTML');
+        flashAnnBtn(key);
+        return;
+    }
+
+    if(!ann||!ann.mod)return;
+    md(ann.mod);
+    showToast(label||ann.label);
+
+    // Actualizar botón del panel (estado persistente o flash)
+    if(ANN_GROUP[key]) setAnnActive(key);
+    else flashAnnBtn(key);
+
+    // Swap anotaciones del modelo al ~60% de la animación
+    if(ann.annName){
+        setTimeout(function(){ refreshAnnotations(ann); }, Math.round((ann.delay||1000)*0.6));
+    }
+
+    // Mover cámara cuando termina la animación
+    if(ann.cam){
+        setTimeout(function(){
+            md(mob?ann.cam.m:ann.cam.d);
+            applyCamSettings();
+        }, ann.delay||1000);
+    }
+}
+
+function setAnnActive(key){
+    var group=ANN_GROUP[key];
+    if(group){
+        // Quitar .on del botón anterior del mismo grupo
+        if(annActive[group]){
+            var prev=document.querySelector('.ann-btn[data-key="'+annActive[group]+'"]');
+            if(prev)prev.classList.remove('on');
+        }
+        annActive[group]=key;
+    }
+    // Activar el botón actual
+    var btn=document.querySelector('.ann-btn[data-key="'+key+'"]');
+    if(btn){
+        btn.classList.remove('flash');
+        btn.classList.add('on');
+    }
+}
+
+function flashAnnBtn(key){
+    // Solo flash para anotaciones sin grupo (ej: html)
+    var btn=document.querySelector('.ann-btn[data-key="'+key+'"]');
+    if(!btn)return;
+    btn.classList.add('flash');
+    setTimeout(function(){btn.classList.remove('flash')},600);
+}
+
 // ── UI builders ──
 function bCats(){
-    var el=document.getElementById('cats');el.innerHTML='';
+    var el=document.getElementById('cats'); el.innerHTML='';
     CS.forEach(function(c,i){
         var b=document.createElement('button');
         b.className='cat'+(i===ci?' on':'');
-        var g=allMats[sel[c]]||'#ccc';
         b.innerHTML='<span>'+c+'</span>';
         b.addEventListener('click',function(){go(c)});
         el.appendChild(b);
     });
 }
 
+function buildAnims(){
+    var el=document.getElementById('ann-grid'); el.innerHTML='';
+    ANNS.forEach(function(ann,i){
+        var b=document.createElement('button');
+        b.className='ann-btn'+(ann.full?' full':'');
+        b.setAttribute('data-key',ann.key);
+        b.style.animationDelay=(i*.04)+'s';
+        b.innerHTML='<div class="ann-icon">'+ann.icon+'</div>'
+                   +'<span>'+ann.label+'</span>';
+        b.addEventListener('click',function(){triggerAnnotation(ann.key,ann.label)});
+        el.appendChild(b);
+    });
+}
+
+// ── Mode switching ──
+function switchMode(m){
+    mode=m;
+    document.getElementById('tab-cfg').classList.toggle('on',m==='cfg');
+    document.getElementById('tab-anim').classList.toggle('on',m==='anim');
+    document.getElementById('cats').style.display=(m==='cfg')?'':'none';
+    document.getElementById('scroll-cfg').classList.toggle('hidden',m!=='cfg');
+    document.getElementById('scroll-anim').classList.toggle('hidden',m!=='anim');
+
+    // When switching to animations, reset to default camera
+    if(m==='anim') dcam();
+}
+
 function go(c){
-    ci=CS.indexOf(c);bCats();
+    ci=CS.indexOf(c); bCats();
     document.getElementById('htl').textContent=c.charAt(0).toUpperCase()+c.slice(1);
-    var cm=CM[c];if(cm){md(mob?cm.m:cm.d);applyCamSettings();}
+    var cm=CM[c]; if(cm){md(mob?cm.m:cm.d); applyCamSettings();}
     render();
     if(mob)pnl.classList.remove('min');
     updateNextBtn();
@@ -638,14 +876,14 @@ function updateNextBtn(){
 
 function render(){
     var g=document.getElementById('cg');
-    // Crossfade out
     g.style.transition='opacity .15s,transform .15s';
-    g.style.opacity='0';g.style.transform='translateY(4px)';
+    g.style.opacity='0'; g.style.transform='translateY(4px)';
 
     setTimeout(function(){
         g.innerHTML='';
         var c=CS[ci],list;
-        if(c==='body'){list=MB;}else{
+        if(c==='body'){list=MB;}
+        else{
             var ok=DP[sel.body]||DP.aluminium;
             list=MO.filter(function(m){return ok.indexOf(m.k)!==-1});
         }
@@ -660,21 +898,20 @@ function render(){
             b.addEventListener('click',function(){pick(c,it)});
             g.appendChild(b);
         });
-        // Crossfade in
         requestAnimationFrame(function(){
             g.style.transition='opacity .2s var(--e),transform .22s var(--e)';
-            g.style.opacity='1';g.style.transform='translateY(0)';
+            g.style.opacity='1'; g.style.transform='translateY(0)';
         });
     },120);
 }
 
 function pick(c,it){
-    ap(c,it.n);sel[c]=it.k;
+    ap(c,it.n); sel[c]=it.k;
     if(c==='body'){
         var d=MO[0];
-        ['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium';ap(x,d.n)});
+        ['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium'; ap(x,d.n)});
     }
-    bCats();render();sendConfig();
+    bCats(); render(); sendConfig();
 }
 
 function sendConfig(){
@@ -695,20 +932,25 @@ var pob=document.getElementById('pob');
 
 updateNextBtn();
 
-document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length;go(CS[ci])});
-document.getElementById('bx').addEventListener('click',function(){
-    // Ripple feedback on cam reset
-    dcam();showToast('Camera reset');
-});
+// Mode tabs
+document.getElementById('tab-cfg').addEventListener('click',function(){switchMode('cfg')});
+document.getElementById('tab-anim').addEventListener('click',function(){switchMode('anim')});
+
+// Next button
+document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length; go(CS[ci])});
+
+// Reset camera buttons
+document.getElementById('bx').addEventListener('click',function(){dcam(); showToast('Camera reset')});
+document.getElementById('bx-anim').addEventListener('click',function(){dcam(); showToast('Camera reset')});
 
 // Collapse / expand (desktop)
 document.getElementById('bcol').addEventListener('click',function(){
-    // Limpia la animación de entrada para que la transition de salida funcione
     pnl.style.animation='none';
-    pnl.offsetHeight; // force reflow
+    pnl.offsetHeight;
     pnl.classList.add('off');
     setTimeout(function(){pob.classList.add('show')},220);
 });
+
 // Mobile handle
 function mobSetMin(v){
     pnl.classList.toggle('min',v);
@@ -719,18 +961,18 @@ document.getElementById('hnd').addEventListener('click',function(){
 });
 pob.addEventListener('click',function(){
     if(mob){mobSetMin(false);}
-    else{pob.classList.remove('show');pnl.classList.remove('off');}
+    else{pob.classList.remove('show'); pnl.classList.remove('off');}
 });
 if(mob)mobSetMin(true);
 
 addEventListener('resize',function(){
-    var was=mob;mob=innerWidth<=768;
-    if(was!==mob){dcam();mobSetMin(false);}
+    var was=mob; mob=innerWidth<=768;
+    if(was!==mob){dcam(); mobSetMin(false);}
 });
 
 setInterval(sendConfig,5000);
 
-// Service Worker — cachea assets Threedium para carga instantánea en revisitas
+// Service Worker
 if('serviceWorker' in navigator){
     window.addEventListener('load',function(){
         navigator.serviceWorker.register('./sw.js').catch(function(){});
