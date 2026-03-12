@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
-    <title>Samsa Studio | Suitcase Configurator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+    <title>Suitcase Configurator</title>
     <meta name="description" content="Customize your premium suitcase in 3D.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,9 +30,14 @@
         --e:cubic-bezier(0.22,1,0.36,1);
         --es:cubic-bezier(0.34,1.56,0.64,1);
         --ep:cubic-bezier(0.4,0,0.2,1);
-        --d:0.24s;
+        --d:0.16s;
+        --sab:env(safe-area-inset-bottom,0px);
     }
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    /* Excluir el contenedor 3D del reset global para no romper los elementos del SDK */
+    #container3d_replace *,
+    #container3d_replace *::before,
+    #container3d_replace *::after{margin:revert;padding:revert;box-sizing:revert}
     html,body{width:100%;height:100%;background:var(--bg);color:var(--t1);
         font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
         font-size:13px;line-height:1.5;overflow:hidden;
@@ -56,11 +61,12 @@
     #container3d_replace{position:fixed;inset:0;width:100%;height:100%}
 
     /* ─── UI shell ─── */
-    .ui{position:fixed;inset:0;z-index:10;pointer-events:none}
+    /* z-index:2 para quedar por encima del canvas pero por debajo del overlay de anotaciones del SDK */
+    .ui{position:fixed;inset:0;z-index:2;pointer-events:none}
 
     /* ─── Toast ─── */
     .toast{
-        position:fixed;bottom:28px;left:50%;
+        position:fixed;left:50%;
         transform:translateX(-50%) translateY(16px);
         background:rgba(16,16,16,.93);color:#fff;
         padding:9px 18px 9px 14px;
@@ -69,31 +75,83 @@
         display:flex;align-items:center;gap:8px;
         box-shadow:0 4px 20px rgba(0,0,0,.18);
         z-index:9998;pointer-events:none;
-        transition:transform .38s var(--e),opacity .28s;
+        transition:transform .38s var(--e),opacity .28s,bottom .3s var(--e);
         opacity:0;white-space:nowrap;
+        bottom:80px;
     }
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
     .toast-dot{width:6px;height:6px;border-radius:50%;background:#fff;flex-shrink:0;opacity:.5}
 
-    /* ─── Panel open btn (reopen) ─── */
-    .panel-open-btn{
+    /* ─── Top tabs (Configurator / Animations) ─── */
+    .top-tabs{
         pointer-events:auto;
-        position:absolute;top:14px;right:14px;
-        width:34px;height:34px;border-radius:10px;
-        background:var(--panel);border:1px solid var(--b1);
-        box-shadow:0 2px 10px rgba(0,0,0,.07);
-        display:none;place-items:center;
+        position:absolute;top:18px;left:50%;transform:translateX(-50%);
+        display:flex;
+        border:1px solid var(--b2);border-radius:8px;
+        overflow:hidden;background:var(--panel);
+        box-shadow:0 2px 12px rgba(0,0,0,.06);
+        z-index:20;
+    }
+    .top-tab{
+        padding:9px 24px;
+        font-size:8.5px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;
         color:var(--t2);
-        transition:background var(--d) var(--e),color var(--d) var(--e),transform .2s var(--es);
+        transition:all var(--d) var(--e);
+        position:relative;
+    }
+    .top-tab+.top-tab::before{
+        content:'';position:absolute;top:20%;left:0;width:1px;height:60%;
+        background:var(--b1);
+    }
+    .top-tab:hover{color:var(--t1);background:var(--s1)}
+    .top-tab.on{color:var(--t1);background:var(--s2)}
+
+    /* ─── Bottom category bar (desktop) ─── */
+    .bottom-bar{
+        pointer-events:auto;
+        position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+        display:flex;gap:6px;
+        z-index:20;
+        transition:opacity .3s var(--e),transform .3s var(--e);
+    }
+    .bottom-bar.hide{opacity:0;transform:translateX(-50%) translateY(10px);pointer-events:none}
+
+    /* ─── Animation action buttons ─── */
+    .anim-bar{
+        pointer-events:auto;
+        position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+        display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+        z-index:20;
+        transition:opacity .3s var(--e),transform .3s var(--e);
+    }
+    .anim-bar.hide{opacity:0;transform:translateX(-50%) translateY(10px);pointer-events:none}
+    .anim-btn{
+        padding:8px 18px;
+        border:1px solid var(--b2);border-radius:100px;
+        font-size:8px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+        color:var(--t1);background:var(--panel);
+        box-shadow:0 2px 8px rgba(0,0,0,.07);
+        transition:all var(--d) var(--e);
         cursor:pointer;
     }
-    .panel-open-btn.show{display:grid}
-    .panel-open-btn:hover{background:var(--s2);color:var(--t1);transform:scale(1.06)}
-    .panel-open-btn:active{transform:scale(.94)}
-    .pob-icon-desk{width:13px;height:13px}
-    .pob-icon-mob,.pob-label{display:none}
+    .anim-btn:hover{background:var(--s2);transform:translateY(-1px)}
+    .anim-btn:active{transform:translateY(0) scale(.97)}
+    .anim-btn.active{background:var(--t1);color:#fff;border-color:var(--t1);box-shadow:0 3px 12px rgba(0,0,0,.18)}
+    .cat-pill{
+        padding:8px 18px;
+        border:1px solid var(--b2);border-radius:100px;
+        font-size:8px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+        color:var(--t1);
+        background:var(--panel);
+        box-shadow:0 2px 8px rgba(0,0,0,.07);
+        transition:all var(--d) var(--e);
+    }
+    .cat-pill:hover{background:var(--s2);color:var(--t1);transform:translateY(-1px)}
+    .cat-pill:active{transform:translateY(0) scale(.97)}
+    .cat-pill.on{background:var(--t1);color:#fff;border-color:var(--t1);box-shadow:0 3px 12px rgba(0,0,0,.18)}
 
-    /* ─── Panel ─── */
+
+    /* ─── Panel (desktop: right sidebar / mobile: bottom sheet) ─── */
     .panel{
         pointer-events:auto;
         position:absolute;top:14px;right:14px;width:256px;
@@ -104,10 +162,9 @@
         display:flex;flex-direction:column;
         overflow:hidden;
         box-shadow:0 2px 20px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.03);
-        animation:panelIn .5s var(--e) .2s both;
-        transition:transform .4s var(--e),opacity .28s var(--e);
-        will-change:transform;
+        transition:transform .22s var(--e),opacity .18s var(--e);
     }
+    .panel.show{animation:panelIn .4s var(--e) both}
     .panel.off{
         transform:translateX(calc(100% + 16px));
         opacity:0;pointer-events:none;
@@ -122,72 +179,51 @@
         display:none;
         flex-direction:column;align-items:center;
         width:100%;padding:10px 0 4px;
-        background:none;flex-shrink:0;cursor:grab;
+        background:none;flex-shrink:0;
+        touch-action:none;
     }
-    .handle:active{cursor:grabbing}
     .handle-pill{
         width:28px;height:3px;border-radius:3px;
         background:rgba(0,0,0,.1);
         transition:background .2s,width .2s var(--es);
     }
-    .handle:active .handle-pill{background:rgba(0,0,0,.28)}
+    .handle.dragging .handle-pill{background:rgba(0,0,0,.3);width:40px}
 
     /* ─── Panel header ─── */
-    .panel-header{padding:10px 12px 0;flex-shrink:0}
+    .panel-header{padding:14px 14px 0;flex-shrink:0}
     .ph-row{
         display:flex;align-items:center;justify-content:space-between;
-        margin-bottom:10px;
+        margin-bottom:2px;
     }
-    .panel-label{
-        font-size:6.5px;font-weight:700;letter-spacing:3px;
-        text-transform:uppercase;color:var(--t3);
+    .ph-title{
+        font-size:11px;font-weight:700;letter-spacing:1.5px;
+        text-transform:uppercase;color:var(--t1);
     }
-    .btn-collapse{
-        width:22px;height:22px;border-radius:6px;
-        background:var(--s1);
+    .btn-close{
+        width:28px;height:28px;border-radius:6px;
+        background:transparent;
         color:var(--t3);
         display:grid;place-items:center;
         transition:background var(--d) var(--e),color var(--d) var(--e),transform .18s var(--es);
     }
-    .btn-collapse svg{width:11px;height:11px}
-    .btn-collapse:hover{background:var(--s3);color:var(--t1);transform:scale(1.1)}
-    .btn-collapse:active{transform:scale(.9)}
+    .btn-close svg{width:14px;height:14px}
+    .btn-close:hover{background:var(--s3);color:var(--t1);transform:scale(1.1)}
+    .btn-close:active{transform:scale(.9)}
 
-    /* ─── Category tabs ─── */
-    .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:0}
-    .cat{
-        padding:6px 2px 7px;
-        border:1px solid transparent;border-radius:8px;
-        display:flex;flex-direction:column;align-items:center;gap:4px;
-        font-size:7px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;
-        color:var(--t3);text-align:center;
-        transition:all var(--d) var(--e);position:relative;
+    /* ─── Panel subtitle ─── */
+    .panel-sub{
+        display:flex;align-items:center;justify-content:space-between;
+        padding:0 14px 10px;flex-shrink:0;
     }
-    .cat:hover{background:var(--s1);color:var(--t2)}
-    .cat.on{background:var(--s2);color:var(--t1);border-color:var(--b1)}
+    .ps-label{font-size:10px;color:var(--t3);font-weight:400}
+    .ps-value{font-size:10px;color:var(--t1);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 
     /* ─── Divider ─── */
-    .divider{height:1px;background:var(--b1);margin:0 12px;flex-shrink:0}
+    .divider{height:1px;background:var(--b1);margin:0 14px;flex-shrink:0}
 
     /* ─── Scroll area ─── */
-    .scroll{flex:1;overflow-y:auto;padding:12px 12px 14px;scrollbar-width:none}
+    .scroll{flex:1;overflow-y:auto;padding:12px 14px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .scroll::-webkit-scrollbar{display:none}
-    .scroll.hidden{display:none}
-
-    /* ─── Section header ─── */
-    .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .hd-left{}
-    .hd-title{font-size:13px;font-weight:600;color:var(--t1);letter-spacing:-.1px;display:block}
-    .hd-sub{font-size:8px;font-weight:400;color:var(--t3);letter-spacing:.2px;display:block;margin-top:1px}
-    .btn-cam{
-        width:26px;height:26px;border-radius:50%;
-        background:var(--s1);color:var(--t3);
-        display:grid;place-items:center;
-        transition:background var(--d) var(--e),color var(--d) var(--e),transform .2s var(--es);
-    }
-    .btn-cam svg{width:12px;height:12px}
-    .btn-cam:hover{background:var(--s3);color:var(--t1);transform:scale(1.1) rotate(-20deg)}
-    .btn-cam:active{transform:scale(.9)}
 
     /* ─── Color grid ─── */
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px}
@@ -208,7 +244,6 @@
     .sw:active{transform:translateY(0) scale(.97)}
     .sw.on{background:var(--s2);border-color:var(--b2)}
 
-    /* orb */
     .orb{
         width:38px;height:38px;border-radius:50%;position:relative;
         transition:transform .3s var(--es),box-shadow .3s var(--e);flex-shrink:0;
@@ -230,7 +265,6 @@
     .sw.on .orb{transform:scale(1.06);box-shadow:0 7px 18px rgba(0,0,0,.3),0 2px 4px rgba(0,0,0,.18),inset 0 -3px 6px rgba(0,0,0,.14)}
     .sw.on .orb::after{border-color:rgba(0,0,0,.26);box-shadow:0 0 0 2px rgba(0,0,0,.05)}
 
-    /* check */
     .chk{
         position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
         opacity:0;transform:scale(.3) rotate(-20deg);
@@ -239,15 +273,9 @@
     .chk svg{width:13px;height:13px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
     .sw.on .chk{opacity:1;transform:scale(1) rotate(0)}
 
-    /* label */
-    .sw-lbl{
-        font-size:8.5px;font-weight:500;color:var(--t3);
-        text-align:center;letter-spacing:.1px;line-height:1.25;
-        transition:color var(--d) var(--e),font-weight 0s;
-    }
-    .sw.on .sw-lbl{color:var(--t1);font-weight:600}
+    .sw-lbl{display:none}
 
-    /* ─── CTA button ─── */
+    /* ─── CTA / Next button ─── */
     .btn-go{
         width:100%;padding:11px 14px;
         background:var(--t1);color:#fff;
@@ -262,6 +290,9 @@
     .btn-go-arrow{transition:transform .2s var(--es)}
     .btn-go:hover .btn-go-arrow{transform:translateX(3px)}
 
+    /* ─── Mobile nav inside panel (hidden on desktop) ─── */
+    .mob-nav{display:none}
+
     /* ─── Global keyframes ─── */
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     @keyframes orbIn{
@@ -269,112 +300,167 @@
         60%{transform:translateY(-1px) scale(1.03)}
         100%{opacity:1;transform:translateY(0) scale(1)}
     }
-    .sw{animation:orbIn .32s var(--es) both}
+    .sw{animation:orbIn .18s var(--es) both}
+
     /* ─── Breakpoints ─── */
     @media(min-width:1200px){.panel{width:268px}}
-    @media(max-width:1100px){.panel{width:244px;right:12px;top:12px;bottom:12px}}
+    @media(max-width:1100px){.panel{width:244px;right:12px;top:12px}}
 
-    /* ─── Mobile ─── */
+    /* ══════════════════════════════════
+       ─── MOBILE (≤768px) ───
+       ══════════════════════════════════ */
     @media(max-width:768px){
         .handle{display:flex}
-        .btn-collapse{display:none!important}
 
-        .panel-open-btn{
-            display:none;
-            position:fixed!important;
-            bottom:14px;left:50%;right:auto;top:auto!important;
-            transform:translateX(-50%);
-            width:auto!important;height:22px!important;
-            padding:0 10px;border-radius:100px!important;
-            background:rgba(16,16,16,.55)!important;
-            border:none!important;
-            color:rgba(255,255,255,.9)!important;
-            font-size:7px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
-            gap:5px;align-items:center;
-            box-shadow:0 1px 8px rgba(0,0,0,.12)!important;
-            backdrop-filter:blur(8px);
-            -webkit-backdrop-filter:blur(8px);
+        /* Top tabs: compact */
+        .top-tabs{top:max(12px,env(safe-area-inset-top,12px));border-radius:10px}
+        .top-tab{padding:10px 20px;font-size:7.5px;letter-spacing:1.5px;min-height:38px}
+
+        /* External bottom bar + anim bar: more space from bottom on mobile */
+        .bottom-bar,.anim-bar{
+            bottom:max(28px,calc(var(--sab) + 20px));
         }
-        .panel-open-btn.show{display:flex}
-        .pob-icon-desk{display:none}
-        .pob-icon-mob{display:block;width:9px;height:9px}
-        .pob-label{display:block}
+        .bottom-bar{
+            gap:5px;
+            flex-wrap:nowrap;
+            max-width:calc(100vw - 24px);
+        }
+        .cat-pill{
+            padding:10px 14px;font-size:7px;letter-spacing:1px;
+            min-height:36px;
+            flex:1;text-align:center;
+            white-space:nowrap;
+        }
 
+        /* Panel → bottom sheet */
         .panel{
             position:fixed!important;
             top:auto!important;right:0!important;left:0!important;bottom:0!important;
             width:100%!important;height:auto;
-            max-height:52vh;
+            max-height:46vh;
             border-radius:20px 20px 0 0;border-bottom:none;
-            padding-bottom:env(safe-area-inset-bottom,0);
-            background:rgba(255,255,255,.96);
-            backdrop-filter:blur(24px);
-            -webkit-backdrop-filter:blur(24px);
-            transition:transform .4s var(--e),opacity .3s var(--e);
-            box-shadow:0 -1px 0 rgba(0,0,0,.06),0 -8px 32px rgba(0,0,0,.07);
-            animation:sheetIn .38s var(--e) .1s both;
+            padding-bottom:var(--sab);
+            background:rgba(255,255,255,.97);
+            backdrop-filter:blur(16px);
+            -webkit-backdrop-filter:blur(16px);
+            transition:transform .22s var(--e),opacity .18s var(--e);
+            box-shadow:0 -2px 0 rgba(0,0,0,.04),0 -8px 24px rgba(0,0,0,.08);
             border:none;
         }
+        .panel.show{animation:sheetIn .22s var(--e) both}
         @keyframes sheetIn{
             from{transform:translateY(100%)}
             to{transform:translateY(0)}
         }
-        .panel.min{transform:translateY(100%);opacity:0;pointer-events:none}
+        .panel.off{transform:translateY(100%);opacity:0;pointer-events:none}
 
-        .handle{padding:8px 0 2px}
-        .handle-pill{width:36px;height:4px;border-radius:4px;background:rgba(0,0,0,.08)}
-        .handle:active .handle-pill{background:rgba(0,0,0,.2)}
+        /* Drag handle */
+        .handle{padding:10px 0 4px}
+        .handle-pill{width:36px;height:4px;border-radius:4px;background:rgba(0,0,0,.1)}
 
-        .panel-header{padding:6px 14px 0}
-        .ph-row{margin-bottom:8px}
-        .panel-label{display:none}
+        .panel-header{padding:4px 16px 0}
+        .ph-row{margin-bottom:2px}
+        .ph-title{font-size:12px;letter-spacing:1.2px}
+        .btn-close{width:32px;height:32px}
+        .btn-close svg{width:16px;height:16px}
 
-        .scroll{padding:8px 14px 16px}
+        .panel-sub{padding:0 16px 8px}
+        .ps-label{font-size:11px}
+        .ps-value{font-size:11px}
 
-        .cats{grid-template-columns:repeat(4,1fr);gap:5px}
-        .cat{padding:6px 2px 7px;gap:4px;border-radius:8px;font-size:7.5px}
+        .divider{margin:0 16px}
 
-        .divider{margin:0 14px}
+        .scroll{padding:10px 16px 6px}
 
-        .hd{margin-bottom:6px}
-        .hd-title{font-size:14px}
-        .hd-sub{font-size:8px}
-        .btn-cam{width:26px;height:26px}
-        .btn-cam svg{width:12px;height:12px}
-
-        .grid{grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
-        .sw{padding:8px 3px 7px;gap:5px;border-radius:9px}
-        .orb{width:34px;height:34px}
-        .orb::before{top:3px;left:5px}
-        .orb::after{inset:-4px}
-        .chk svg{width:12px;height:12px}
-        .sw-lbl{font-size:7.5px}
+        /* Color grid: 4 columns on mobile (sin labels = más compacto) */
+        .grid{grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px}
+        .sw{padding:8px 2px 7px;gap:0;border-radius:10px;min-height:40px}
+        .orb{width:30px;height:30px}
+        .orb::before{top:3px;left:4px}
+        .orb::after{inset:-3px}
+        .chk svg{width:11px;height:11px}
         @keyframes orbIn{
-            0%{opacity:0;transform:scale(.82)}
+            0%{opacity:0;transform:scale(.8)}
             100%{opacity:1;transform:scale(1)}
         }
 
-        .btn-go{padding:11px;font-size:9px;letter-spacing:1.5px;border-radius:9px}
-        .toast{bottom:20px;font-size:11px;padding:8px 16px 8px 12px}
+        /* Next button */
+        .btn-go{padding:11px;font-size:9px;letter-spacing:1.5px;border-radius:10px;min-height:42px}
+
+        /* Mobile nav: category pills inside sheet */
+        .mob-nav{
+            display:flex;flex-direction:column;gap:8px;
+            padding:8px 16px calc(8px + var(--sab));
+            flex-shrink:0;
+        }
+        .mob-cats{
+            display:flex;gap:5px;
+            overflow-x:auto;scrollbar-width:none;
+            -webkit-overflow-scrolling:touch;
+            padding-bottom:2px;
+        }
+        .mob-cats::-webkit-scrollbar{display:none}
+        .mob-cat{
+            padding:9px 0;flex:1;min-width:0;
+            border:1px solid var(--b2);border-radius:100px;
+            font-size:7.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+            color:var(--t1);background:var(--panel);
+            text-align:center;white-space:nowrap;
+            transition:all var(--d) var(--e);
+            min-height:36px;
+        }
+        .mob-cat:active{transform:scale(.96)}
+        .mob-cat.on{background:var(--t1);color:#fff;border-color:var(--t1)}
+
+        /* Toast above bottom bar */
+        .toast{bottom:calc(70px + var(--sab));font-size:11px;padding:8px 16px 8px 12px}
     }
 
+    /* ─── Mobile landscape ─── */
     @media(max-width:768px) and (orientation:landscape){
         .panel{
             left:auto!important;right:0!important;
             top:0!important;width:44%!important;
-            max-height:100vh;
+            max-height:100vh;max-height:100dvh;
             border-radius:20px 0 0 20px;
-            background:rgba(255,255,255,.96);
+            background:rgba(255,255,255,.97);
+        }
+        .panel.off{transform:translateX(100%)}
+        .panel.show{animation:panelSlideIn .38s var(--e) both}
+        @keyframes panelSlideIn{
+            from{transform:translateX(100%)}
+            to{transform:translateX(0)}
         }
         .handle{display:none}
-        .panel.min{transform:none;opacity:1;pointer-events:auto}
         .grid{grid-template-columns:repeat(3,1fr)}
+        .mob-nav{padding-bottom:8px}
     }
 
+    /* ─── Very small screens ─── */
     @media(max-width:390px){
-        .panel{max-height:55vh}
-        .orb{width:30px;height:30px}
+        .panel{max-height:62vh}
+        .orb{width:32px;height:32px}
         .sw-lbl{font-size:7px}
+        .cat-pill{padding:8px 10px;font-size:6.5px}
+        .mob-cat{font-size:7px;padding:8px 0}
+        .top-tab{padding:9px 16px;font-size:7px}
+        .grid{gap:4px}
+    }
+
+    /* ─── Tiny screens (SE, 5s) ─── */
+    @media(max-width:340px){
+        .panel{max-height:65vh}
+        .grid{grid-template-columns:repeat(3,1fr);gap:3px}
+        .orb{width:28px;height:28px}
+        .sw{padding:8px 2px 6px;gap:4px}
+        .sw-lbl{font-size:6.5px}
+        .top-tab{padding:8px 12px;font-size:6.5px;letter-spacing:1px}
+        .mob-cat{font-size:6.5px;letter-spacing:.8px}
+    }
+
+    /* ─── Tall phones: allow more sheet space ─── */
+    @media(max-width:768px) and (min-height:800px){
+        .panel{max-height:50vh}
     }
     </style>
 </head>
@@ -388,449 +474,821 @@
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-msg"></span></div>
 
 <div class="ui">
-    <button class="panel-open-btn" id="pob" aria-label="Open configurator">
-        <svg class="pob-icon-desk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-        <svg class="pob-icon-mob" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>
-            <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="2" fill="currentColor" stroke="none"/>
-        </svg>
-        <span class="pob-label">Customize</span>
-    </button>
+    <!-- Top tabs: Configurator / Animations -->
+    <div class="top-tabs" id="top-tabs">
+        <button class="top-tab on" data-mode="configurator">Configurator</button>
+        <button class="top-tab" data-mode="animations">Animations</button>
+    </div>
 
-    <div class="panel" id="pnl">
-        <button class="handle" id="hnd" aria-label="Toggle panel">
+    <!-- Bottom category bar (desktop, also mobile when panel closed) -->
+    <div class="bottom-bar" id="bottom-bar"></div>
+
+    <!-- Animation action buttons (visible only in animations mode) -->
+    <div class="anim-bar hide" id="anim-bar"></div>
+
+    <!-- Color picker panel -->
+    <div class="panel off" id="pnl">
+        <div class="handle" id="hnd">
             <div class="handle-pill"></div>
-        </button>
+        </div>
 
         <div class="panel-header">
             <div class="ph-row">
-                <span class="panel-label">Samsa Studio</span>
-                <button class="btn-collapse" id="bcol" aria-label="Hide panel">
+                <span class="ph-title" id="htl">BODY COLOR</span>
+                <button class="btn-close" id="bx" aria-label="Close panel">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                        <polyline points="9 18 15 12 9 6"/>
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                 </button>
             </div>
+        </div>
 
-            <!-- Category tabs -->
-            <div class="cats" id="cats"></div>
+        <div class="panel-sub">
+            <span class="ps-label">Select Color</span>
+            <span class="ps-value" id="ps-val">ALUMINIUM</span>
         </div>
 
         <div class="divider"></div>
 
-        <!-- ── Configurator scroll area ── -->
         <div class="scroll" id="scroll-cfg">
-            <div class="hd">
-                <div class="hd-left">
-                    <span class="hd-title" id="htl">Body</span>
-                    <span class="hd-sub"   id="hct"></span>
-                </div>
-                <button class="btn-cam" id="bx" aria-label="Reset camera">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                        <path d="M3 3v5h5"/>
-                    </svg>
-                </button>
-            </div>
             <div class="grid" id="cg"></div>
             <button class="btn-go" id="bn">
-                <span id="bn-txt">Next Step</span>
+                <span id="bn-txt">Next</span>
                 <span class="btn-go-arrow">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                 </span>
             </button>
         </div>
 
+        <!-- Mobile-only: category navigation inside sheet -->
+        <div class="mob-nav" id="mob-nav">
+            <div class="mob-cats" id="mob-cats"></div>
+        </div>
     </div>
 </div>
 
 <script src="https://distcdn.unlimited3d.com/pres/v/2.10.0/unlimited3d.min.js"></script>
 <script>
+/**
+ * SAMSA STUDIO - SUITCASE CONFIGURATOR
+ * VERSIÓN ULTRA VISIBLE - Sin console.logs
+ */
 var App=(function(){'use strict';
 
 var ICO={
-    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    // Annotation icons (inline SVG)
-    open:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l14 9-14 9V3z"/></svg>',
-    close:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>',
-    html:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-    extend:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>',
-    retract:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>',
-    spinOn:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v3M12 19v3M2 12H5M19 12h3"/></svg>',
-    spinOff:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>'
+    check:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
-// ── Annotation definitions ──
-// annName: nombre exacto en el modelo 3D | annPair: anotación a mostrar al ejecutar esta
-var ANNS=[
-    {key:'open',          label:'Open',             icon:ICO.open,    mod:'open',             cam:{d:'default_camera_desktop',m:'default_camera_mobile'}, delay:1800, annName:'Open',             annPair:'Close'},
-    {key:'close',         label:'Close',            icon:ICO.close,   mod:'close',            cam:{d:'default_camera_desktop',m:'default_camera_mobile'}, delay:1800, annName:'Close',            annPair:'Open'},
-    {key:'html',          label:'HTML',             icon:ICO.html,    mod:null,               cam:null,                                                   delay:0,    full:true},
-    {key:'extend_handle', label:'Extend Handle',    icon:ICO.extend,  mod:'extend_handle',    cam:{d:'camera_handle',         m:'camera_handle_mobile'},  delay:1000, annName:'Extend handle',    annPair:'Retract handle'},
-    {key:'retract_handle',label:'Retract Handle',   icon:ICO.retract, mod:'retract_handle',   cam:{d:'camera_handle',         m:'camera_handle_mobile'},  delay:1000, annName:'Retract handle',   annPair:'Extend handle'},
-    {key:'spinner_on',    label:'Wheel Spinner On', icon:ICO.spinOn,  mod:'wheel_spinner_on', cam:{d:'camera_wheels',         m:'camera_wheels_mobile'},  delay:1000, annName:'Wheel spinner on', annPair:'Wheel spinner off'},
-    {key:'spinner_off',   label:'Wheel Spinner Off',icon:ICO.spinOff, mod:'wheel_spinner_off',cam:{d:'camera_wheels',         m:'camera_wheels_mobile'},  delay:1000, annName:'Wheel spinner off',annPair:'Wheel spinner on'}
+// ══════════════════════════════════════════════════════════════
+// CONFIGURACIÓN SEGÚN PDF DEL PROYECTO
+// ══════════════════════════════════════════════════════════════
+
+// Partes del modelo 3D (según PDF)
+var PARTS = Object.freeze({
+    body:    ['Body_metal_base', 'Body_metal_cover'],
+    handles: ['Handle_base1', 'Handle_metal-1', 'Handle_telescope-1'],
+    corners: ['Corners_base', 'Corners_cover'],
+    wheels:  ['Wheels_base', 'Wheels_base_cover', 'Wheels_front_right_base', 'Wheels_front_left_base',
+              'Wheels_back_right_base', 'Wheels_back_left_base', 'Wheels_front_right_center',
+              'Wheels_front_left_center', 'Wheels_back_right_center', 'Wheels_back_left_centar']
+});
+
+// Materiales para BODY (según PDF)
+var BODY_MATERIALS = Object.freeze([
+    {key:'blue',      name:'01 CHROME SATIN ROYAL BLUE',    label:'Royal Blue',    gradient:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {key:'green',     name:'02 CHROME SATIN OLIVE GREEN',   label:'Olive Green',   gradient:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
+    {key:'orange',    name:'03 CHROME SATIN BURNT ORANGE',  label:'Burnt Orange',  gradient:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {key:'red',       name:'04 CHROME SATIN CHERRY RED',    label:'Cherry Red',    gradient:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {key:'black',     name:'05 CHROME SATIN MIDNIGHT BLACK',label:'Midnight Black',gradient:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {key:'aluminium', name:'06 CHROME SATIN ALUMINUM',      label:'Aluminium',     gradient:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'}
+]);
+
+// Materiales para HANDLES, CORNERS, WHEELS (según PDF)
+var OTHER_MATERIALS = Object.freeze([
+    {key:'aluminium', name:'Chrome ALUMINIUM',          label:'Aluminium', gradient:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'},
+    {key:'black',     name:'Chrome MIDNIGHT BLACK',     label:'Black',     gradient:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
+    {key:'red',       name:'Chrome CHERRY RED',         label:'Red',       gradient:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
+    {key:'blue',      name:'Chrome ROYAL BLUE',         label:'Blue',      gradient:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
+    {key:'orange',    name:'Chrome SATIN BURNT ORANGE', label:'Orange',    gradient:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
+    {key:'green',     name:'Chrome SATIN OLIVE GREEN',  label:'Green',     gradient:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
+]);
+
+// Modificadores de cámara (según PDF)
+var CAMERA_MODIFIERS = Object.freeze({
+    body:    {desktop:'camera_body',    mobile:'camera_body_mobile'},
+    handles: {desktop:'camera_handle',  mobile:'camera_handle_mobile'},
+    corners: {desktop:'camera_corners', mobile:'camera_corners_mobile'},
+    wheels:  {desktop:'camera_wheels',  mobile:'camera_wheels_mobile'}
+});
+
+// Lógica de dependencias (según PDF)
+var DEPENDENCIES = Object.freeze({
+    blue:      ['blue', 'black', 'aluminium'],
+    green:     ['green', 'black', 'aluminium'],
+    orange:    ['orange', 'black', 'aluminium'],
+    red:       ['red', 'black', 'aluminium'],
+    black:     ['black', 'aluminium'],
+    aluminium: ['black', 'aluminium']
+});
+
+// ══════════════════════════════════════════════════════════════
+// ANOTACIONES - MAPEO COMPLETO
+// ══════════════════════════════════════════════════════════════
+var ANNOTATION_MODIFIERS = {
+    'Open': 'open',
+    'Close': 'close',
+    'Extend handle': 'extend_handle',
+    'Retract handle': 'retract_handle',
+    'Wheel spinner on': 'wheel_spinner_on',
+    'Wheel spinner off': 'wheel_spinner_off',
+    'open locker': 'open_locker',
+    'close locker': 'close_locker',
+    'dim1': 'dim-on',
+    'dim2': 'dim-y-on',
+    'dim3': 'dim-z-on'
+};
+
+// Lista de todas las anotaciones
+var ANNOTATION_NAMES = Object.keys(ANNOTATION_MODIFIERS);
+
+// Anotaciones principales para intercambio
+var MAIN_ANNOTATIONS = ['Open', 'Close', 'Extend handle', 'Retract handle', 'Wheel spinner on', 'Wheel spinner off'];
+
+// Anotaciones iniciales para modo animations
+var INITIAL_ANNOTATIONS = ['Open', 'Extend handle', 'Wheel spinner on', 'open locker', 'dim1', 'dim2', 'dim3'];
+
+// ══════════════════════════════════════════════════════════════
+// ESTADO Y VARIABLES GLOBALES
+// ══════════════════════════════════════════════════════════════
+
+var CATEGORIES = ['body', 'handles', 'corners', 'wheels'];
+var TITLES = {body:'Body Color', handles:'Handles', corners:'Corners', wheels:'Wheels'};
+
+var currentCategoryIndex = 0;
+var isReady = false;
+var isPanelOpen = false;
+var currentMode = 'configurator';
+var isMobile = false;
+var activeCameraName = '';
+var _loadingSetupDone = false;
+
+// Estado de selección de materiales
+var selectedMaterials = {
+    body: 'aluminium',
+    handles: 'aluminium',
+    corners: 'aluminium',
+    wheels: 'aluminium'
+};
+
+// ══════════════════════════════════════════════════════════════
+// INICIALIZACIÓN SDK DE UNLIMITED3D - VERSIÓN ULTRA VISIBLE
+// ══════════════════════════════════════════════════════════════
+
+var sdkOptions = {
+    distID: 'latest',
+    solution3DName: 'suitcase-color',
+    projectName: 'resources-for-videos-and-marketing-purposes',
+    solution3DID: '62766',
+    workspaceID: '93698',
+    containerID: 'container3d_replace',
+
+    onLoadingChanged: function(data) {
+        var isDone = data === false ||
+                     (data && data.totalAssets > 0 && data.loadedAssets === data.totalAssets);
+        if (isDone && !_loadingSetupDone) {
+            _loadingSetupDone = true;
+
+            applyCameraSettings();
+            Unlimited3D.activateModifier({ modifier: 'annotations_pop_out' });
+            setTimeout(function() {
+                Unlimited3D.hideAnnotations({
+                    annotations: ['Close', 'Retract handle', 'Wheel spinner off', 'close locker']
+                });
+            }, 400);
+        }
+    },
+
+    // onTrigger para notificaciones de UI solamente.
+    // NO llamamos activateModifier aquí — el SDK maneja las animaciones y
+    // el AnnotationState machine nativamente cuando el usuario clica una anotación.
+    onTrigger: function(e) {
+        if (e && e.type === 'PointerClicked' && e.data && e.data[0]) {
+            var obj = e.data[0];
+            var name = obj.shortName || obj.name;
+            if (name) handleAnnotationClick(name);
+        }
+    }
+};
+
+Unlimited3D.init(sdkOptions);
+window.addEventListener('Unlimited3DReady', initializeApp);
+
+var bootTimeout = setTimeout(function() {
+    if (!isReady) initializeApp();
+}, 5000);
+
+// ══════════════════════════════════════════════════════════════
+// FUNCIONES PARA ANOTACIONES
+// ══════════════════════════════════════════════════════════════
+
+function initializeApp() {
+    if (isReady) return;
+    isReady = true;
+    clearTimeout(bootTimeout);
+    
+    isMobile = checkIfMobile();
+    
+    activateCorrectCamera(function() {
+        setDefaultCameraModifier();
+        if (isPanelOpen) {
+            var cat = CATEGORIES[currentCategoryIndex];
+            setCategoryCamera(cat);
+        }
+    });
+    
+    document.getElementById('ld').classList.add('hide');
+    sendConfigurationToParent();
+}
+
+// ─── Estado de los botones de acción de animaciones ───
+var animState = {
+    suitcase: 'closed',   // 'closed' | 'open'
+    handle:   'retracted',// 'retracted' | 'extended'
+    wheel:    'off'       // 'off' | 'on'
+};
+
+// Configuración de cada botón de acción
+var ANIM_ACTIONS = [
+    {
+        id: 'btn-suitcase',
+        states: {
+            closed:   { label: 'Open',           modifier: 'open',            next: 'open' },
+            open:     { label: 'Close',           modifier: 'close',           next: 'closed' }
+        },
+        stateKey: 'suitcase'
+    },
+    {
+        id: 'btn-handle',
+        states: {
+            retracted:{ label: 'Extend handle',  modifier: 'extend_handle',   next: 'extended' },
+            extended: { label: 'Retract handle', modifier: 'retract_handle',  next: 'retracted' }
+        },
+        stateKey: 'handle'
+    },
+    {
+        id: 'btn-wheel',
+        states: {
+            off:      { label: 'Wheel spinner on',  modifier: 'wheel_spinner_on',  next: 'on' },
+            on:       { label: 'Wheel spinner off', modifier: 'wheel_spinner_off', next: 'off' }
+        },
+        stateKey: 'wheel'
+    },
 ];
 
-// ── Camera map for annotation clicks on 3D model ──
-var ACAM=Object.freeze({
-    'open':         {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'close':        {d:'default_camera_desktop', m:'default_camera_mobile'},
-    'extend_handle':{d:'camera_handle',          m:'camera_handle_mobile'},
-    'retract_handle':{d:'camera_handle',         m:'camera_handle_mobile'},
-    'spinner_on':   {d:'camera_wheels',          m:'camera_wheels_mobile'},
-    'spinner_off':  {d:'camera_wheels',          m:'camera_wheels_mobile'}
-});
+function buildAnimBar() {
+    var bar = document.getElementById('anim-bar');
+    bar.innerHTML = '';
 
-function resolveAnnotationModifier(raw){
-    var n=(raw||'').toLowerCase();
-    if(n==='html')                                         return 'html';
-    if(n.includes('open')&&!n.includes('locker'))          return 'open';
-    if(n.includes('close')&&!n.includes('locker'))         return 'close';
-    if(n.includes('extend'))                               return 'extend_handle';
-    if(n.includes('retract'))                              return 'retract_handle';
-    if(n.includes('spinner')&&n.includes('on'))            return 'spinner_on';
-    if(n.includes('spinner')&&n.includes('off'))           return 'spinner_off';
-    return null;
-}
+    ANIM_ACTIONS.forEach(function(action) {
+        var btn = document.createElement('button');
+        btn.className = 'anim-btn';
+        btn.id = action.id;
+        var currentState = animState[action.stateKey];
+        btn.textContent = action.states[currentState].label;
 
-var SDK={
-    distID:'latest',
-    solution3DName:'suitcase-color',
-    projectName:'resources-for-videos-and-marketing-purposes',
-    solution3DID:'62766',
-    workspaceID:'93698',
-    containerID:'container3d_replace',
-    onLoadingChanged:function(isLoading){
-        if(!isLoading)applyCamSettings();
-    },
-    onPointerClick:function(objects){
-        if(!objects||!objects.length)return;
-        var obj=objects[0];
-        // No filtramos por obj.type: distintas versiones del SDK pueden
-        // devolver 'annotation', 'html', 'hotspot', etc.
-        var key=resolveAnnotationModifier(obj.shortName||obj.name);
-        if(!key)return;
-        triggerAnnotation(key,obj.name||obj.shortName||key);
-    }
-};
+        btn.addEventListener('click', function() {
+            var state = animState[action.stateKey];
+            var cfg = action.states[state];
 
-// ── Part names per category ──
-var P=Object.freeze({
-    body:    ['Body_metal_base','Body_metal_cover'],
-    handles: ['Handle_base1','Handle_metal-1','Handle_telescope-1'],
-    corners: ['Corners_base','Corners_cover'],
-    wheels:  ['Wheels_base','Wheels_base_cover','Wheels_front_right_base','Wheels_front_left_base',
-              'Wheels_back_right_base','Wheels_back_left_base','Wheels_front_right_center',
-              'Wheels_front_left_center','Wheels_back_right_center','Wheels_back_left_centar']
-});
-var PF=Object.freeze({body:['Body_Case'],handles:['Handles'],corners:['Corners'],wheels:['Wheels']});
+            Unlimited3D.activateModifier({ modifier: cfg.modifier });
+            animState[action.stateKey] = cfg.next;
 
-// ── Materials ──
-var MB=Object.freeze([
-    {k:'blue',      n:'01 CHROME SATIN ROYAL BLUE',    l:'Royal Blue',    g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
-    {k:'green',     n:'02 CHROME SATIN OLIVE GREEN',   l:'Olive Green',   g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'},
-    {k:'orange',    n:'03 CHROME SATIN BURNT ORANGE',  l:'Burnt Orange',  g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
-    {k:'red',       n:'04 CHROME SATIN CHERRY RED',    l:'Cherry Red',    g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
-    {k:'black',     n:'05 CHROME SATIN MIDNIGHT BLACK',l:'Midnight Black',g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
-    {k:'aluminium', n:'06 CHROME SATIN ALUMINUM',      l:'Aluminium',     g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'}
-]);
-var MO=Object.freeze([
-    {k:'aluminium', n:'Chrome ALUMINIUM',          l:'Aluminium', g:'radial-gradient(circle at 32% 28%,#dce0e6,#a8b0ba 50%,#6e7680 100%)'},
-    {k:'black',     n:'Chrome MIDNIGHT BLACK',     l:'Black',     g:'radial-gradient(circle at 32% 28%,#484848,#1e1e1e 50%,#080808 100%)'},
-    {k:'red',       n:'Chrome CHERRY RED',         l:'Red',       g:'radial-gradient(circle at 32% 28%,#e85060,#a82030 50%,#580a12 100%)'},
-    {k:'blue',      n:'Chrome ROYAL BLUE',         l:'Blue',      g:'radial-gradient(circle at 32% 28%,#7aa0f0,#3868c8 50%,#142e6e 100%)'},
-    {k:'orange',    n:'Chrome SATIN BURNT ORANGE', l:'Orange',    g:'radial-gradient(circle at 32% 28%,#f09848,#c06018 50%,#6e3008 100%)'},
-    {k:'green',     n:'Chrome SATIN OLIVE GREEN',  l:'Green',     g:'radial-gradient(circle at 32% 28%,#8cb85c,#4e7230 50%,#2a3e18 100%)'}
-]);
+            // Actualizar label del botón
+            var newCfg = action.states[cfg.next];
+            btn.textContent = newCfg.label;
 
-// ── Camera modifiers per category (FIXED) ──
-var CM=Object.freeze({
-    body:    {d:'camera_body',    m:'camera_body_mobile'},
-    handles: {d:'camera_handle',  m:'camera_handle_mobile'},
-    corners: {d:'camera_corners', m:'Camera_corners_mobile'},
-    wheels:  {d:'camera_wheels',  m:'camera_wheels_mobile'}
-});
-
-// ── Dependency map ──
-var DP=Object.freeze({
-    blue:['blue','black','aluminium'],  green:['green','black','aluminium'],
-    orange:['orange','black','aluminium'], red:['red','black','aluminium'],
-    black:['black','aluminium'],        aluminium:['black','aluminium']
-});
-
-var CS=['body','handles','corners','wheels'];
-var ci=0, mob=innerWidth<=768, rdy=false;
-var sel={body:'aluminium',handles:'aluminium',corners:'aluminium',wheels:'aluminium'};
-
-var allMats={};
-MB.forEach(function(m){allMats[m.k]=m.g});
-MO.forEach(function(m){allMats[m.k]=m.g});
-
-bCats(); render();
-
-// Ocultar las anotaciones "de resultado" desde el inicio via configuración oficial
-Unlimited3D.init(SDK, {
-    annotations:{
-        hide:['Close','Retract handle','Wheel spinner off']
-    }
-});
-addEventListener('Unlimited3DReady',boot);
-var _t=setTimeout(function(){if(!rdy)boot()},5000);
-
-function applyCamSettings(){
-    try{
-        if(Unlimited3D.setCameraControlsSettings){
-            Unlimited3D.setCameraControlsSettings({
-                enableZoom:true,enablePan:false,enableRotate:true,
-                minDistance:6,maxDistance:8,dampingFactor:0.15,
-                minPolarAngle:0.5,maxPolarAngle:1.7
-            });
-        }
-    }catch(e){}
-}
-
-// Muestra una anotación (ya estaba en escena, solo oculta)
-function showAnn(name){
-    try{
-        Unlimited3D.showAnnotations({
-            annotationObjects:[{annotations:[name]}]
-        }, function(err){ if(err) console.warn('[Samsa] showAnn:',err); });
-    }catch(e){ console.warn('[Samsa] showAnn exception:',e); }
-}
-// Oculta una anotación
-function hideAnn(name){
-    try{
-        Unlimited3D.hideAnnotations({
-            annotations:[name]
-        }, function(err){ if(err) console.warn('[Samsa] hideAnn:',err); });
-    }catch(e){ console.warn('[Samsa] hideAnn exception:',e); }
-}
-
-// Tras ejecutar una animación: oculta la anotación actual y muestra la opuesta
-function refreshAnnotations(ann){
-    if(!ann||!ann.annName||!ann.annPair) return;
-    // Primero mostrar la opuesta (native, clickeable porque estuvo en escena desde init)
-    showAnn(ann.annPair);
-    // Luego ocultar la actual
-    setTimeout(function(){ hideAnn(ann.annName); }, 100);
-}
-
-function boot(){
-    if(rdy)return; rdy=true; clearTimeout(_t);
-    // Igualar material visual de spinners al resto de anotaciones
-    try{
-        Unlimited3D.changeAnnotationMaterial({
-            annotations:['Wheel spinner on','Wheel spinner off'],
-            material:'Rimowa-Black'
+            // Feedback visual breve
+            btn.classList.add('active');
+            setTimeout(function() { btn.classList.remove('active'); }, 400);
         });
-    }catch(e){}
-    dcam();
-    document.getElementById('ld').classList.add('hide');
-    sendConfig();
+
+        bar.appendChild(btn);
+    });
 }
 
-// ── Toast ──
-var _toastT;
-function showToast(msg){
-    document.getElementById('toast-msg').textContent=msg;
-    var t=document.getElementById('toast');
-    t.classList.add('show');
-    clearTimeout(_toastT);
-    _toastT=setTimeout(function(){t.classList.remove('show')},2200);
+var _lastAnnotationClick = '';
+var _lastAnnotationTime = 0;
+
+function handleAnnotationClick(annotationName) {
+    if (!annotationName) return;
+
+    var now = Date.now();
+    if (annotationName === _lastAnnotationClick && now - _lastAnnotationTime < 500) return;
+    _lastAnnotationClick = annotationName;
+    _lastAnnotationTime = now;
+
+    // Mapear click de anotación 3D al botón correspondiente y activarlo
+    var annotToAction = {
+        'Open': 'btn-suitcase',
+        'Close': 'btn-suitcase',
+        'Extend handle': 'btn-handle',
+        'Retract handle': 'btn-handle',
+        'Wheel spinner on': 'btn-wheel',
+        'Wheel spinner off': 'btn-wheel',
+        'open locker': null,
+        'close locker': null
+    };
+
+    var btnId = annotToAction[annotationName];
+    if (btnId) {
+        var btn = document.getElementById(btnId);
+        if (btn) btn.click();
+    }
 }
 
-// ── Material application ──
-function ap(cat,mat,cb){
-    Unlimited3D.changeMaterial({parts:P[cat],material:mat},function(e){
-        if(!e){if(cb)cb();return}
-        Unlimited3D.changeMaterials({partObjects:[{parts:P[cat],material:mat}]},function(e2){
-            if(!e2){if(cb)cb();return}
-            var f=PF[cat]; if(f)Unlimited3D.changeMaterial({parts:f,material:mat},function(){if(cb)cb()})
-        })
-    })
+function showAnnotation(annotationName) {
+    try {
+        Unlimited3D.showAnnotations({ annotations: [annotationName] });
+    } catch(e) {}
 }
 
-function md(n){
-    try{Unlimited3D.activateModifier({modifier:n});}
-    catch(e){console.warn('[Samsa] Modifier error:',n,e)}
-}
-function dcam(){
-    md(mob?'default_camera_mobile':'default_camera_desktop');
-    applyCamSettings();
+function hideAnnotation(annotationName) {
+    try {
+        Unlimited3D.hideAnnotations({ annotations: [annotationName] });
+    } catch(e) {}
 }
 
-// ── Trigger annotation (from UI button or 3D click) ──
-function triggerAnnotation(key, label){
-    var ann=ANNS.find(function(a){return a.key===key});
+function showInitialAnnotations() {
+    if (currentMode !== 'animations') return;
+    
+    setTimeout(function() {
+        INITIAL_ANNOTATIONS.forEach(function(name) {
+            showAnnotation(name);
+        });
+    }, 500);
+}
 
-    // HTML annotation: no tiene modifier, solo feedback visual
-    if(key==='html'){
-        showToast(label||'HTML');
+function hideAllAnnotations() {
+    ANNOTATION_NAMES.forEach(function(annName) {
+        hideAnnotation(annName);
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESTO DEL CÓDIGO (CÁMARAS, MATERIALES, UI) - SIN CAMBIOS
+// ══════════════════════════════════════════════════════════════
+
+function checkIfMobile() {
+    return window.matchMedia('(max-width:768px)').matches;
+}
+
+function activateCorrectCamera(callback) {
+    isMobile = checkIfMobile();
+    var cameraName = isMobile ? 'Camera Mobile' : 'Camera Desktop';
+    
+    if (activeCameraName === cameraName) {
+        if (callback) callback();
         return;
     }
-
-    if(!ann||!ann.mod)return;
-    md(ann.mod);
-    showToast(label||ann.label);
-
-    // Swap anotaciones del modelo al ~60% de la animación
-    if(ann.annName){
-        setTimeout(function(){ refreshAnnotations(ann); }, Math.round((ann.delay||1000)*0.6));
-    }
-
-    // Mover cámara cuando termina la animación
-    if(ann.cam){
-        setTimeout(function(){
-            md(mob?ann.cam.m:ann.cam.d);
-            applyCamSettings();
-        }, ann.delay||1000);
+    
+    activeCameraName = cameraName;
+    
+    try {
+        Unlimited3D.activateCamera({name: cameraName}, function(err) {
+            if (err) {}
+            
+            try {
+                Unlimited3D.activateCameraControl({name: cameraName});
+            } catch(e) {}
+            
+            if (callback) callback();
+        });
+    } catch(e) {
+        if (callback) callback();
     }
 }
 
-// ── UI builders ──
-function bCats(){
-    var el=document.getElementById('cats'); el.innerHTML='';
-    CS.forEach(function(c,i){
-        var b=document.createElement('button');
-        b.className='cat'+(i===ci?' on':'');
-        b.innerHTML='<span>'+c+'</span>';
-        b.addEventListener('click',function(){go(c)});
-        el.appendChild(b);
+function setDefaultCameraModifier() {
+    isMobile = checkIfMobile();
+    var modifier = isMobile ? 'default_camera_mobile' : 'default_camera_desktop';
+    
+    activateCorrectCamera(function() {
+        activateModifier(modifier);
+        applyCameraSettings();
     });
 }
 
-function go(c){
-    ci=CS.indexOf(c); bCats();
-    document.getElementById('htl').textContent=c.charAt(0).toUpperCase()+c.slice(1);
-    var cm=CM[c]; if(cm){md(mob?cm.m:cm.d); applyCamSettings();}
-    render();
-    if(mob)pnl.classList.remove('min');
-    updateNextBtn();
+function setCategoryCamera(category) {
+    isMobile = checkIfMobile();
+    var camMod = CAMERA_MODIFIERS[category];
+    if (!camMod) return;
+    
+    var modifier = isMobile ? camMod.mobile : camMod.desktop;
+    
+    activateCorrectCamera(function() {
+        activateModifier(modifier);
+        applyCameraSettings();
+    });
 }
 
-function updateNextBtn(){
-    var next=CS[(ci+1)%CS.length];
-    var txt=next.charAt(0).toUpperCase()+next.slice(1);
-    document.getElementById('bn-txt').textContent='Next: '+txt;
+function activateModifier(modifierName) {
+    if (!isReady) return;
+    
+    try {
+        Unlimited3D.activateModifier({modifier: modifierName});
+    } catch(e) {}
 }
 
-function render(){
-    var g=document.getElementById('cg');
-    g.style.transition='opacity .15s,transform .15s';
-    g.style.opacity='0'; g.style.transform='translateY(4px)';
-
-    setTimeout(function(){
-        g.innerHTML='';
-        var c=CS[ci],list;
-        if(c==='body'){list=MB;}
-        else{
-            var ok=DP[sel.body]||DP.aluminium;
-            list=MO.filter(function(m){return ok.indexOf(m.k)!==-1});
+function applyCameraSettings() {
+    try {
+        if (Unlimited3D.setCameraControlsSettings) {
+            Unlimited3D.setCameraControlsSettings({
+                enableZoom: true,
+                enablePan: false,
+                enableRotate: true,
+                minDistance: 6,
+                maxDistance: 8,
+                dampingFactor: 0.15,
+                minPolarAngle: 0.5,
+                maxPolarAngle: 1.7
+            });
         }
-        document.getElementById('hct').textContent=list.length+' color'+(list.length!==1?'s':'');
-        list.forEach(function(it,i){
-            var b=document.createElement('button');
-            b.className='sw'+(sel[c]===it.k?' on':'');
-            b.style.animationDelay=(i*.045)+'s';
-            b.setAttribute('aria-label',it.l);
-            b.innerHTML='<div class="orb" style="background:'+it.g+'"><div class="chk">'+ICO.check+'</div></div>'
-                       +'<span class="sw-lbl">'+it.l+'</span>';
-            b.addEventListener('click',function(){pick(c,it)});
-            g.appendChild(b);
+    } catch(e) {}
+}
+
+// CAMBIO DE MATERIALES
+function changeMaterial(category, materialName, callback) {
+    var parts = PARTS[category];
+    if (!parts) return;
+    
+    Unlimited3D.changeMaterial({parts: parts, material: materialName}, function(err) {
+        if (!err) {
+            if (callback) callback();
+            return;
+        }
+        
+        Unlimited3D.changeMaterials({
+            partObjects: [{parts: parts, material: materialName}]
+        }, function(err2) {
+            if (callback) callback();
         });
-        requestAnimationFrame(function(){
-            g.style.transition='opacity .2s var(--e),transform .22s var(--e)';
-            g.style.opacity='1'; g.style.transform='translateY(0)';
-        });
-    },120);
-}
-
-function pick(c,it){
-    ap(c,it.n); sel[c]=it.k;
-    if(c==='body'){
-        var d=MO[0];
-        ['handles','corners','wheels'].forEach(function(x){sel[x]='aluminium'; ap(x,d.n)});
-    }
-    bCats(); render(); sendConfig();
-}
-
-function sendConfig(){
-    if(window.parent&&window.parent!==window){
-        var readable={
-            body:MB.find(function(m){return m.k===sel.body}).l,
-            handles:MO.find(function(m){return m.k===sel.handles}).l,
-            corners:MO.find(function(m){return m.k===sel.corners}).l,
-            wheels:MO.find(function(m){return m.k===sel.wheels}).l
-        };
-        window.parent.postMessage({type:'CONFIG_UPDATE',payload:sel,readable:readable,timestamp:Date.now()},'*');
-    }
-}
-
-// ── DOM refs & events ──
-var pnl=document.getElementById('pnl');
-var pob=document.getElementById('pob');
-
-updateNextBtn();
-
-// Next button
-document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length; go(CS[ci])});
-
-// Reset camera button
-document.getElementById('bx').addEventListener('click',function(){dcam(); showToast('Camera reset')});
-
-// Collapse / expand (desktop)
-document.getElementById('bcol').addEventListener('click',function(){
-    pnl.style.animation='none';
-    pnl.offsetHeight;
-    pnl.classList.add('off');
-    setTimeout(function(){pob.classList.add('show')},220);
-});
-
-// Mobile handle
-function mobSetMin(v){
-    pnl.classList.toggle('min',v);
-    if(mob)pob.classList.toggle('show',v);
-}
-document.getElementById('hnd').addEventListener('click',function(){
-    if(mob)mobSetMin(!pnl.classList.contains('min'));
-});
-pob.addEventListener('click',function(){
-    if(mob){mobSetMin(false);}
-    else{pob.classList.remove('show'); pnl.classList.remove('off');}
-});
-if(mob)mobSetMin(true);
-
-addEventListener('resize',function(){
-    var was=mob; mob=innerWidth<=768;
-    if(was!==mob){dcam(); mobSetMin(false);}
-});
-
-setInterval(sendConfig,5000);
-
-// Service Worker
-if('serviceWorker' in navigator){
-    window.addEventListener('load',function(){
-        navigator.serviceWorker.register('./sw.js').catch(function(){});
     });
 }
+
+function selectMaterial(category, material) {
+    changeMaterial(category, material.name);
+    selectedMaterials[category] = material.key;
+    
+    if (category === 'body') {
+        var defaultMat = OTHER_MATERIALS[0];
+        ['handles', 'corners', 'wheels'].forEach(function(cat) {
+            selectedMaterials[cat] = 'aluminium';
+            changeMaterial(cat, defaultMat.name);
+        });
+    }
+    
+    updateUI();
+    sendConfigurationToParent();
+}
+
+// INTERFAZ DE USUARIO
+function buildCategoryButtons() {
+    var container = document.getElementById('bottom-bar');
+    container.innerHTML = '';
+    
+    CATEGORIES.forEach(function(cat, index) {
+        var btn = document.createElement('button');
+        btn.className = 'cat-pill' + (isPanelOpen && index === currentCategoryIndex ? ' on' : '');
+        btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        btn.addEventListener('click', function() {
+            if (currentMode !== 'configurator') return;
+            openPanel(index);
+        });
+        container.appendChild(btn);
+    });
+}
+
+function buildMobileCategoryButtons() {
+    var container = document.getElementById('mob-cats');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    CATEGORIES.forEach(function(cat, index) {
+        var btn = document.createElement('button');
+        btn.className = 'mob-cat' + (isPanelOpen && index === currentCategoryIndex ? ' on' : '');
+        btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        btn.addEventListener('click', function() {
+            if (currentMode !== 'configurator') return;
+            openPanel(index);
+        });
+        container.appendChild(btn);
+    });
+}
+
+function renderColorGrid() {
+    var grid = document.getElementById('cg');
+    grid.style.opacity = '0';
+    grid.style.transform = 'translateY(4px)';
+    
+    setTimeout(function() {
+        grid.innerHTML = '';
+        
+        var category = CATEGORIES[currentCategoryIndex];
+        var materials;
+        
+        if (category === 'body') {
+            materials = BODY_MATERIALS;
+        } else {
+            var bodyColor = selectedMaterials.body;
+            var allowedKeys = DEPENDENCIES[bodyColor] || DEPENDENCIES.aluminium;
+            materials = OTHER_MATERIALS.filter(function(mat) {
+                return allowedKeys.indexOf(mat.key) !== -1;
+            });
+        }
+        
+        materials.forEach(function(mat, index) {
+            var btn = document.createElement('button');
+            btn.className = 'sw' + (selectedMaterials[category] === mat.key ? ' on' : '');
+            btn.style.animationDelay = (index * 0.025) + 's';
+            btn.setAttribute('aria-label', mat.label);
+            btn.innerHTML = '<div class="orb" style="background:' + mat.gradient + '">' +
+                           '<div class="chk">' + ICO.check + '</div></div>' +
+                           '<span class="sw-lbl">' + mat.label + '</span>';
+            btn.addEventListener('click', function() {
+                selectMaterial(category, mat);
+            });
+            grid.appendChild(btn);
+        });
+        
+        requestAnimationFrame(function() {
+            grid.style.opacity = '1';
+            grid.style.transform = 'translateY(0)';
+        });
+    }, 40);
+}
+
+function openPanel(categoryIndex) {
+    currentCategoryIndex = categoryIndex;
+    isPanelOpen = true;
+    isMobile = checkIfMobile();
+    
+    var panel = document.getElementById('pnl');
+    panel.classList.remove('off');
+    panel.classList.add('show');
+    
+    var category = CATEGORIES[categoryIndex];
+    document.getElementById('htl').textContent = TITLES[category];
+    
+    setCategoryCamera(category);
+    
+    if (isMobile) {
+        document.getElementById('bottom-bar').classList.add('hide');
+    }
+    
+    updateUI();
+}
+
+function closePanel() {
+    isPanelOpen = false;
+    isMobile = checkIfMobile();
+    
+    var panel = document.getElementById('pnl');
+    panel.classList.remove('show');
+    panel.classList.add('off');
+    
+    if (isMobile && currentMode === 'configurator') {
+        document.getElementById('bottom-bar').classList.remove('hide');
+    }
+    
+    updateUI();
+    
+    if (currentMode === 'configurator') {
+        setDefaultCameraModifier();
+    }
+}
+
+function updateNextButton() {
+    var nextIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
+    var nextCat = CATEGORIES[nextIndex];
+    var label = nextCat.charAt(0).toUpperCase() + nextCat.slice(1);
+    document.getElementById('bn-txt').textContent = 'Next: ' + label;
+}
+
+function updateSelectedValue() {
+    var category = CATEGORIES[currentCategoryIndex];
+    var materials = category === 'body' ? BODY_MATERIALS : OTHER_MATERIALS;
+    var selectedMat = materials.find(function(m) {
+        return m.key === selectedMaterials[category];
+    });
+    document.getElementById('ps-val').textContent = selectedMat ? selectedMat.label.toUpperCase() : 'ALUMINIUM';
+}
+
+function updateUI() {
+    buildCategoryButtons();
+    buildMobileCategoryButtons();
+    renderColorGrid();
+    updateNextButton();
+    updateSelectedValue();
+}
+
+function switchMode(mode) {
+    currentMode = mode;
+    isMobile = checkIfMobile();
+    
+    document.querySelectorAll('.top-tab').forEach(function(tab) {
+        tab.classList.toggle('on', tab.getAttribute('data-mode') === mode);
+    });
+    
+    var bottomBar = document.getElementById('bottom-bar');
+    
+    var animBar = document.getElementById('anim-bar');
+
+    if (mode === 'configurator') {
+        animBar.classList.add('hide');
+        closePanel();
+        buildCategoryButtons();
+        bottomBar.classList.remove('hide');
+        hideAllAnnotations();
+    } else {
+        bottomBar.classList.add('hide');
+        closePanel();
+        setDefaultCameraModifier();
+        // Resetear estado de botones al entrar en animations
+        animState.suitcase = 'closed';
+        animState.handle   = 'retracted';
+        animState.wheel    = 'off';
+        buildAnimBar();
+        animBar.classList.remove('hide');
+        // Reactivar anotaciones 3D (restaurarlas si venían ocultas desde configurator)
+        Unlimited3D.activateModifier({ modifier: 'annotations_pop_out' });
+        setTimeout(function() {
+            INITIAL_ANNOTATIONS.forEach(function(name) {
+                showAnnotation(name);
+            });
+            Unlimited3D.hideAnnotations({
+                annotations: ['Close', 'Retract handle', 'Wheel spinner off', 'close locker']
+            });
+        }, 400);
+    }
+}
+
+// UTILIDADES
+var toastTimeout;
+function showToast(message) {
+    var toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = message;
+    toast.classList.add('show');
+    
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(function() {
+        toast.classList.remove('show');
+    }, 2200);
+}
+
+function sendConfigurationToParent() {
+    if (window.parent && window.parent !== window) {
+        var bodyMat = BODY_MATERIALS.find(function(m) { return m.key === selectedMaterials.body; });
+        var handlesMat = OTHER_MATERIALS.find(function(m) { return m.key === selectedMaterials.handles; });
+        var cornersMat = OTHER_MATERIALS.find(function(m) { return m.key === selectedMaterials.corners; });
+        var wheelsMat = OTHER_MATERIALS.find(function(m) { return m.key === selectedMaterials.wheels; });
+        
+        var readable = {
+            body: bodyMat ? bodyMat.label : 'Aluminium',
+            handles: handlesMat ? handlesMat.label : 'Aluminium',
+            corners: cornersMat ? cornersMat.label : 'Aluminium',
+            wheels: wheelsMat ? wheelsMat.label : 'Aluminium'
+        };
+        
+        window.parent.postMessage({
+            type: 'CONFIG_UPDATE',
+            payload: selectedMaterials,
+            readable: readable,
+            timestamp: Date.now()
+        }, '*');
+    }
+}
+
+// EVENT LISTENERS
+document.querySelectorAll('.top-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        switchMode(tab.getAttribute('data-mode'));
+    });
+});
+
+document.getElementById('bn').addEventListener('click', function() {
+    currentCategoryIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
+    openPanel(currentCategoryIndex);
+});
+
+document.getElementById('bx').addEventListener('click', function() {
+    closePanel();
+});
+
+// Mobile swipe-to-dismiss
+(function() {
+    var handle = document.getElementById('hnd');
+    var startY = 0, currentY = 0, dragging = false;
+    
+    function onStart(e) {
+        if (!checkIfMobile() || !isPanelOpen) return;
+        dragging = true;
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentY = startY;
+        document.getElementById('pnl').style.transition = 'none';
+        handle.classList.add('dragging');
+    }
+    
+    function onMove(e) {
+        if (!dragging) return;
+        currentY = e.touches ? e.touches[0].clientY : e.clientY;
+        var deltaY = Math.max(0, currentY - startY);
+        document.getElementById('pnl').style.transform = 'translateY(' + deltaY + 'px)';
+    }
+    
+    function onEnd() {
+        if (!dragging) return;
+        dragging = false;
+        handle.classList.remove('dragging');
+        document.getElementById('pnl').style.transition = '';
+        
+        var deltaY = currentY - startY;
+        if (deltaY > 60) {
+            closePanel();
+        } else {
+            document.getElementById('pnl').style.transform = '';
+        }
+    }
+    
+    handle.addEventListener('touchstart', onStart, {passive: true});
+    handle.addEventListener('touchmove', onMove, {passive: true});
+    handle.addEventListener('touchend', onEnd);
+    handle.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+})();
+
+function handleViewportChange() {
+    var wasMobile = isMobile;
+    isMobile = checkIfMobile();
+    
+    if (wasMobile !== isMobile) {
+        activeCameraName = '';
+        activateCorrectCamera(function() {
+            if (isPanelOpen) {
+                setCategoryCamera(CATEGORIES[currentCategoryIndex]);
+            } else {
+                setDefaultCameraModifier();
+            }
+        });
+        
+        if (!isMobile && isPanelOpen) {
+            document.getElementById('bottom-bar').classList.remove('hide');
+        }
+        if (isMobile && isPanelOpen) {
+            document.getElementById('bottom-bar').classList.add('hide');
+        }
+        
+        updateUI();
+    }
+}
+
+window.addEventListener('resize', handleViewportChange);
+window.addEventListener('orientationchange', function() {
+    setTimeout(handleViewportChange, 150);
+});
+
+setInterval(sendConfigurationToParent, 5000);
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function() {});
+    });
+}
+
+buildCategoryButtons();
+buildMobileCategoryButtons();
+renderColorGrid();
 
 return Object.freeze({
-    get state(){return Object.assign({},sel)},
-    get readable(){
-        return{
-            body:MB.find(function(m){return m.k===sel.body}).l,
-            handles:MO.find(function(m){return m.k===sel.handles}).l,
-            corners:MO.find(function(m){return m.k===sel.corners}).l,
-            wheels:MO.find(function(m){return m.k===sel.wheels}).l
-        }
+    get state() {
+        return Object.assign({}, selectedMaterials);
+    },
+    get readable() {
+        var bodyMat = BODY_MATERIALS.find(function(m) { return m.key === selectedMaterials.body; });
+        var handlesMat = OTHER_MATERIALS.find(function(m) { return m.key === selectedMaterials.handles; });
+        var cornersMat = OTHER_MATERIALS.find(function(m) { return m.key === selectedMaterials.corners; });
+        var wheelsMat = OTHER_MATERIALS.find(function(m) { return m.key === selectedMaterials.wheels; });
+        
+        return {
+            body: bodyMat ? bodyMat.label : 'Aluminium',
+            handles: handlesMat ? handlesMat.label : 'Aluminium',
+            corners: cornersMat ? cornersMat.label : 'Aluminium',
+            wheels: wheelsMat ? wheelsMat.label : 'Aluminium'
+        };
     }
 });
+
 })();
 </script>
 </body>
 </html>
-
