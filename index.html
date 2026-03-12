@@ -153,24 +153,6 @@
     .btn-collapse:hover{background:var(--s3);color:var(--t1);transform:scale(1.1)}
     .btn-collapse:active{transform:scale(.9)}
 
-    /* ─── Mode tabs (Configurator / Animations) ─── */
-    .mode-tabs{
-        display:grid;grid-template-columns:1fr 1fr;gap:3px;
-        background:var(--s1);border-radius:9px;padding:3px;
-        margin-bottom:10px;
-    }
-    .mode-tab{
-        padding:7px 4px;border-radius:6px;
-        font-size:8px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
-        color:var(--t3);text-align:center;
-        transition:all var(--d) var(--e);
-    }
-    .mode-tab.on{
-        background:var(--panel);color:var(--t1);
-        box-shadow:0 1px 4px rgba(0,0,0,.08);
-    }
-    .mode-tab:hover:not(.on){color:var(--t2)}
-
     /* ─── Category tabs ─── */
     .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:0}
     .cat{
@@ -280,40 +262,6 @@
     .btn-go-arrow{transition:transform .2s var(--es)}
     .btn-go:hover .btn-go-arrow{transform:translateX(3px)}
 
-    /* ─── Animations panel ─── */
-    .ann-grid{
-        display:grid;grid-template-columns:1fr 1fr;gap:6px;
-        margin-bottom:12px;
-    }
-    .ann-btn{
-        padding:13px 8px 11px;border-radius:10px;
-        border:1px solid var(--b1);
-        display:flex;flex-direction:column;align-items:center;gap:7px;
-        font-size:7.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-        color:var(--t2);text-align:center;
-        background:var(--s1);
-        transition:background var(--d) var(--e),color var(--d) var(--e),
-                   border-color var(--d) var(--e),transform .18s var(--es);
-    }
-    .ann-btn:hover{background:var(--s2);color:var(--t1);transform:translateY(-1px)}
-    .ann-btn:active{transform:scale(.97)}
-    .ann-btn.flash{background:var(--t1);color:#fff;border-color:transparent}
-    .ann-btn.on{background:var(--t1);color:#fff;border-color:transparent}
-    .ann-btn.on:hover{opacity:.87;transform:translateY(-1px)}
-    .ann-icon{
-        width:32px;height:32px;border-radius:50%;
-        background:rgba(0,0,0,.05);
-        display:grid;place-items:center;
-        transition:background var(--d) var(--e);
-        flex-shrink:0;
-    }
-    .ann-icon svg{width:14px;height:14px}
-    .ann-btn:hover .ann-icon{background:rgba(0,0,0,.08)}
-    .ann-btn.flash .ann-icon,.ann-btn.on .ann-icon{background:rgba(255,255,255,.15)}
-    /* HTML annotation spans full width */
-    .ann-btn.full{grid-column:1/-1;flex-direction:row;gap:10px;padding:11px 14px}
-    .ann-btn.full .ann-icon{width:26px;height:26px;flex-shrink:0}
-
     /* ─── Global keyframes ─── */
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     @keyframes orbIn{
@@ -322,12 +270,6 @@
         100%{opacity:1;transform:translateY(0) scale(1)}
     }
     .sw{animation:orbIn .32s var(--es) both}
-    @keyframes annIn{
-        0%{opacity:0;transform:translateY(6px) scale(.94)}
-        100%{opacity:1;transform:translateY(0) scale(1)}
-    }
-    .ann-btn{animation:annIn .28s var(--es) both}
-
     /* ─── Breakpoints ─── */
     @media(min-width:1200px){.panel{width:268px}}
     @media(max-width:1100px){.panel{width:244px;right:12px;top:12px;bottom:12px}}
@@ -389,8 +331,6 @@
 
         .scroll{padding:8px 14px 16px}
 
-        .mode-tabs{margin-bottom:8px}
-
         .cats{grid-template-columns:repeat(4,1fr);gap:5px}
         .cat{padding:6px 2px 7px;gap:4px;border-radius:8px;font-size:7.5px}
 
@@ -416,12 +356,6 @@
 
         .btn-go{padding:11px;font-size:9px;letter-spacing:1.5px;border-radius:9px}
         .toast{bottom:20px;font-size:11px;padding:8px 16px 8px 12px}
-
-        .ann-grid{grid-template-columns:repeat(3,1fr);gap:5px}
-        .ann-btn{padding:10px 4px 9px;gap:5px;border-radius:9px}
-        .ann-icon{width:28px;height:28px}
-        .ann-icon svg{width:12px;height:12px}
-        .ann-btn.full{grid-column:1/-1}
     }
 
     @media(max-width:768px) and (orientation:landscape){
@@ -435,14 +369,12 @@
         .handle{display:none}
         .panel.min{transform:none;opacity:1;pointer-events:auto}
         .grid{grid-template-columns:repeat(3,1fr)}
-        .ann-grid{grid-template-columns:1fr 1fr}
     }
 
     @media(max-width:390px){
         .panel{max-height:55vh}
         .orb{width:30px;height:30px}
         .sw-lbl{font-size:7px}
-        .ann-grid{grid-template-columns:1fr 1fr}
     }
     </style>
 </head>
@@ -483,13 +415,7 @@
                 </button>
             </div>
 
-            <!-- ── Mode switcher: Configurator / Animations ── -->
-            <div class="mode-tabs">
-                <button class="mode-tab on" id="tab-cfg">Configurator</button>
-                <button class="mode-tab"    id="tab-anim">Animations</button>
-            </div>
-
-            <!-- Category tabs — visible only in configurator mode -->
+            <!-- Category tabs -->
             <div class="cats" id="cats"></div>
         </div>
 
@@ -518,22 +444,6 @@
             </button>
         </div>
 
-        <!-- ── Animations scroll area ── -->
-        <div class="scroll hidden" id="scroll-anim">
-            <div class="hd">
-                <div class="hd-left">
-                    <span class="hd-title">Animations</span>
-                    <span class="hd-sub" id="ann-sub">Select an action</span>
-                </div>
-                <button class="btn-cam" id="bx-anim" aria-label="Reset camera">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                        <path d="M3 3v5h5"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="ann-grid" id="ann-grid"></div>
-        </div>
     </div>
 </div>
 
@@ -552,14 +462,6 @@ var ICO={
     spinOn:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v3M12 19v3M2 12H5M19 12h3"/></svg>',
     spinOff:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>'
 };
-
-// ── Annotation state tracking (grupos mutuamente excluyentes) ──
-var ANN_GROUP={
-    'open':'suitcase',        'close':'suitcase',
-    'extend_handle':'handle', 'retract_handle':'handle',
-    'spinner_on':'spinner',   'spinner_off':'spinner'
-};
-var annActive={suitcase:null, handle:null, spinner:null};
 
 // ── Annotation definitions ──
 // annName: nombre exacto en el modelo 3D | annPair: anotación a mostrar al ejecutar esta
@@ -661,14 +563,14 @@ var DP=Object.freeze({
 });
 
 var CS=['body','handles','corners','wheels'];
-var ci=0, mob=innerWidth<=768, rdy=false, mode='cfg';
+var ci=0, mob=innerWidth<=768, rdy=false;
 var sel={body:'aluminium',handles:'aluminium',corners:'aluminium',wheels:'aluminium'};
 
 var allMats={};
 MB.forEach(function(m){allMats[m.k]=m.g});
 MO.forEach(function(m){allMats[m.k]=m.g});
 
-bCats(); render(); buildAnims();
+bCats(); render();
 
 // Ocultar las anotaciones "de resultado" desde el inicio via configuración oficial
 Unlimited3D.init(SDK, {
@@ -768,17 +670,12 @@ function triggerAnnotation(key, label){
     // HTML annotation: no tiene modifier, solo feedback visual
     if(key==='html'){
         showToast(label||'HTML');
-        flashAnnBtn(key);
         return;
     }
 
     if(!ann||!ann.mod)return;
     md(ann.mod);
     showToast(label||ann.label);
-
-    // Actualizar botón del panel (estado persistente o flash)
-    if(ANN_GROUP[key]) setAnnActive(key);
-    else flashAnnBtn(key);
 
     // Swap anotaciones del modelo al ~60% de la animación
     if(ann.annName){
@@ -794,32 +691,6 @@ function triggerAnnotation(key, label){
     }
 }
 
-function setAnnActive(key){
-    var group=ANN_GROUP[key];
-    if(group){
-        // Quitar .on del botón anterior del mismo grupo
-        if(annActive[group]){
-            var prev=document.querySelector('.ann-btn[data-key="'+annActive[group]+'"]');
-            if(prev)prev.classList.remove('on');
-        }
-        annActive[group]=key;
-    }
-    // Activar el botón actual
-    var btn=document.querySelector('.ann-btn[data-key="'+key+'"]');
-    if(btn){
-        btn.classList.remove('flash');
-        btn.classList.add('on');
-    }
-}
-
-function flashAnnBtn(key){
-    // Solo flash para anotaciones sin grupo (ej: html)
-    var btn=document.querySelector('.ann-btn[data-key="'+key+'"]');
-    if(!btn)return;
-    btn.classList.add('flash');
-    setTimeout(function(){btn.classList.remove('flash')},600);
-}
-
 // ── UI builders ──
 function bCats(){
     var el=document.getElementById('cats'); el.innerHTML='';
@@ -830,33 +701,6 @@ function bCats(){
         b.addEventListener('click',function(){go(c)});
         el.appendChild(b);
     });
-}
-
-function buildAnims(){
-    var el=document.getElementById('ann-grid'); el.innerHTML='';
-    ANNS.forEach(function(ann,i){
-        var b=document.createElement('button');
-        b.className='ann-btn'+(ann.full?' full':'');
-        b.setAttribute('data-key',ann.key);
-        b.style.animationDelay=(i*.04)+'s';
-        b.innerHTML='<div class="ann-icon">'+ann.icon+'</div>'
-                   +'<span>'+ann.label+'</span>';
-        b.addEventListener('click',function(){triggerAnnotation(ann.key,ann.label)});
-        el.appendChild(b);
-    });
-}
-
-// ── Mode switching ──
-function switchMode(m){
-    mode=m;
-    document.getElementById('tab-cfg').classList.toggle('on',m==='cfg');
-    document.getElementById('tab-anim').classList.toggle('on',m==='anim');
-    document.getElementById('cats').style.display=(m==='cfg')?'':'none';
-    document.getElementById('scroll-cfg').classList.toggle('hidden',m!=='cfg');
-    document.getElementById('scroll-anim').classList.toggle('hidden',m!=='anim');
-
-    // When switching to animations, reset to default camera
-    if(m==='anim') dcam();
 }
 
 function go(c){
@@ -932,16 +776,11 @@ var pob=document.getElementById('pob');
 
 updateNextBtn();
 
-// Mode tabs
-document.getElementById('tab-cfg').addEventListener('click',function(){switchMode('cfg')});
-document.getElementById('tab-anim').addEventListener('click',function(){switchMode('anim')});
-
 // Next button
 document.getElementById('bn').addEventListener('click',function(){ci=(ci+1)%CS.length; go(CS[ci])});
 
-// Reset camera buttons
+// Reset camera button
 document.getElementById('bx').addEventListener('click',function(){dcam(); showToast('Camera reset')});
-document.getElementById('bx-anim').addEventListener('click',function(){dcam(); showToast('Camera reset')});
 
 // Collapse / expand (desktop)
 document.getElementById('bcol').addEventListener('click',function(){
@@ -994,3 +833,4 @@ return Object.freeze({
 </script>
 </body>
 </html>
+
