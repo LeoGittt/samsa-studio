@@ -154,8 +154,8 @@
     /* ─── Panel (desktop: right sidebar / mobile: bottom sheet) ─── */
     .panel{
         pointer-events:auto;
-        position:absolute;top:14px;right:14px;width:256px;
-        height:auto;max-height:calc(100vh - 28px);
+        position:absolute;top:0;bottom:0;right:14px;width:256px;
+        height:fit-content;margin:auto 0;max-height:calc(100vh - 28px);
         background:var(--panel);
         border:1px solid var(--b1);
         border-radius:16px;
@@ -226,7 +226,9 @@
     .scroll::-webkit-scrollbar{display:none}
 
     /* ─── Color grid ─── */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px}
+    .cg-wrap{margin-bottom:12px}
+    .cg-arr{display:none}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
     .sw{
         display:flex;flex-direction:column;align-items:center;gap:6px;
         padding:10px 4px 8px;border-radius:10px;
@@ -275,23 +277,53 @@
 
     .sw-lbl{display:none}
 
-    /* ─── CTA / Next button ─── */
-    .btn-go{
-        width:100%;padding:11px 14px;
-        background:var(--t1);color:#fff;
-        border-radius:10px;
-        font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;
-        display:flex;align-items:center;justify-content:center;gap:7px;
-        transition:opacity .2s,transform .18s var(--es),box-shadow .2s;
-        box-shadow:0 2px 8px rgba(0,0,0,.14);
+    /* ─── Step navigation ─── */
+    .nav-row{
+        display:flex;align-items:center;gap:0;
+        background:#fff;border-radius:14px;
+        border:1px solid rgba(0,0,0,.08);
+        box-shadow:0 2px 12px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.05);
+        overflow:hidden;
     }
-    .btn-go:hover{opacity:.87;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.16)}
-    .btn-go:active{transform:translateY(0) scale(.98);opacity:1;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-    .btn-go-arrow{transition:transform .2s var(--es)}
-    .btn-go:hover .btn-go-arrow{transform:translateX(3px)}
+    .nav-arr{
+        width:46px;height:52px;flex-shrink:0;
+        background:#fff;
+        display:flex;align-items:center;justify-content:center;
+        color:var(--t1);
+        transition:background .15s,color .15s,transform .15s var(--es);
+        position:relative;
+    }
+    .nav-arr::after{
+        content:'';position:absolute;top:10px;bottom:10px;
+        width:1px;background:rgba(0,0,0,.07);
+    }
+    #bn-prev::after{right:0}
+    #bn-next::after{left:0}
+    .nav-arr:hover{background:rgba(0,0,0,.04)}
+    .nav-arr:active{background:rgba(0,0,0,.08);transform:scale(.92)}
+    .nav-arr:disabled{opacity:.22;pointer-events:none}
+    .nav-arr svg{display:block;flex-shrink:0}
+    .nav-center{
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:6px;flex:1;min-width:0;padding:10px 4px;
+    }
+    .nav-label{
+        font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+        color:var(--t1);white-space:nowrap;line-height:1;
+    }
+    .nav-dots{display:flex;gap:5px;align-items:center}
+    .nav-dot{
+        width:5px;height:5px;border-radius:50%;
+        background:rgba(0,0,0,.14);
+        transition:background .25s var(--e),width .25s var(--e),border-radius .25s var(--e);
+        flex-shrink:0;
+    }
+    .nav-dot.on{
+        background:var(--t1);width:16px;border-radius:3px;
+    }
 
-    /* ─── Mobile nav inside panel (hidden on desktop) ─── */
-    .mob-nav{display:none}
+    /* ─── Mobile nav inside panel (replaced by nav-row) ─── */
+    .mob-nav{display:none!important}
 
     /* ─── Global keyframes ─── */
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -304,7 +336,7 @@
 
     /* ─── Breakpoints ─── */
     @media(min-width:1200px){.panel{width:268px}}
-    @media(max-width:1100px){.panel{width:244px;right:12px;top:12px}}
+    @media(max-width:1100px){.panel{width:244px;right:12px}}
 
     /* ══════════════════════════════════
        ─── MOBILE (≤768px) ───
@@ -381,9 +413,37 @@
 
         .scroll{padding:10px 16px 6px}
 
-        /* Color grid: 4 columns on mobile (sin labels = más compacto) */
-        .grid{grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:6px}
-        .sw{padding:8px 2px 7px;gap:0;border-radius:10px;min-height:40px}
+        /* Color strip on mobile */
+        .cg-wrap{
+            display:flex;align-items:center;
+            background:#fff;border-radius:14px;
+            border:1px solid rgba(0,0,0,.08);
+            box-shadow:0 2px 12px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.05);
+            overflow:hidden;margin-bottom:8px;
+        }
+        .cg-arr{
+            display:flex;align-items:center;justify-content:center;
+            width:40px;height:60px;flex-shrink:0;background:#fff;
+            color:var(--t1);transition:background .15s,transform .15s var(--es),opacity .2s;
+            position:relative;
+        }
+        .cg-arr::after{
+            content:'';position:absolute;top:10px;bottom:10px;
+            width:1px;background:rgba(0,0,0,.07);
+        }
+        #cg-prev::after{right:0}
+        #cg-next::after{left:0}
+        .cg-arr:hover{background:rgba(0,0,0,.04)}
+        .cg-arr:active{background:rgba(0,0,0,.08);transform:scale(.92)}
+        .cg-arr.hidden{opacity:.2;pointer-events:none}
+        .grid{
+            display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-behavior:smooth;
+            scrollbar-width:none;flex:1;gap:6px;padding:8px 6px;margin-bottom:0;
+        }
+        .grid::-webkit-scrollbar{display:none}
+        .sw{
+            flex:0 0 54px;padding:8px 2px 7px;gap:0;border-radius:10px;min-height:54px;
+        }
         .orb{width:30px;height:30px}
         .orb::before{top:3px;left:4px}
         .orb::after{inset:-3px}
@@ -393,8 +453,13 @@
             100%{opacity:1;transform:scale(1)}
         }
 
-        /* Next button */
-        .btn-go{padding:11px;font-size:9px;letter-spacing:1.5px;border-radius:10px;min-height:42px}
+        /* Nav row mobile */
+        .nav-row{border-radius:12px}
+        .nav-arr{width:42px;height:46px}
+        .nav-label{font-size:8px;letter-spacing:1.8px}
+        .nav-dot{width:4px;height:4px}
+        .nav-dot.on{width:13px}
+        .nav-center{gap:5px;padding:8px 2px}
 
         /* Mobile nav: category pills inside sheet */
         .mob-nav{
@@ -441,7 +506,6 @@
             to{transform:translateX(0)}
         }
         .handle{display:none}
-        .grid{grid-template-columns:repeat(3,1fr)}
         .mob-nav{padding-bottom:8px}
     }
 
@@ -520,13 +584,27 @@
         <div class="divider"></div>
 
         <div class="scroll" id="scroll-cfg">
-            <div class="grid" id="cg"></div>
-            <button class="btn-go" id="bn">
-                <span id="bn-txt">Next</span>
-                <span class="btn-go-arrow">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                </span>
-            </button>
+            <div class="cg-wrap" id="cg-wrap">
+                <button class="cg-arr hidden" id="cg-prev" aria-label="Scroll left">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div class="grid" id="cg"></div>
+                <button class="cg-arr" id="cg-next" aria-label="Scroll right">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+            <div class="nav-row" id="nav-row">
+                <button class="nav-arr" id="bn-prev" aria-label="Previous">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div class="nav-center">
+                    <span class="nav-label" id="bn-txt">Body</span>
+                    <div class="nav-dots" id="nav-dots"></div>
+                </div>
+                <button class="nav-arr" id="bn-next" aria-label="Next">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
         </div>
 
         <!-- Mobile-only: category navigation inside sheet -->
@@ -1078,10 +1156,22 @@ function closePanel() {
 }
 
 function updateNextButton() {
-    var nextIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
-    var nextCat = CATEGORIES[nextIndex];
-    var label = nextCat.charAt(0).toUpperCase() + nextCat.slice(1);
-    document.getElementById('bn-txt').textContent = 'Next: ' + label;
+    var cat = CATEGORIES[currentCategoryIndex];
+    var label = cat.charAt(0).toUpperCase() + cat.slice(1);
+    document.getElementById('bn-txt').textContent = label;
+
+    // Dots
+    var dotsEl = document.getElementById('nav-dots');
+    dotsEl.innerHTML = '';
+    CATEGORIES.forEach(function(_, i) {
+        var d = document.createElement('span');
+        d.className = 'nav-dot' + (i === currentCategoryIndex ? ' on' : '');
+        dotsEl.appendChild(d);
+    });
+
+    // Arrows: always enabled (wrap-around)
+    document.getElementById('bn-prev').disabled = false;
+    document.getElementById('bn-next').disabled = false;
 }
 
 function updateSelectedValue() {
@@ -1185,14 +1275,52 @@ document.querySelectorAll('.top-tab').forEach(function(tab) {
     });
 });
 
-document.getElementById('bn').addEventListener('click', function() {
+document.getElementById('bn-next').addEventListener('click', function() {
     currentCategoryIndex = (currentCategoryIndex + 1) % CATEGORIES.length;
+    openPanel(currentCategoryIndex);
+});
+
+document.getElementById('bn-prev').addEventListener('click', function() {
+    currentCategoryIndex = (currentCategoryIndex - 1 + CATEGORIES.length) % CATEGORIES.length;
     openPanel(currentCategoryIndex);
 });
 
 document.getElementById('bx').addEventListener('click', function() {
     closePanel();
 });
+
+// Color strip scroll arrows (mobile only)
+(function() {
+    var grid = document.getElementById('cg');
+    var btnPrev = document.getElementById('cg-prev');
+    var btnNext = document.getElementById('cg-next');
+
+    function updateArrows() {
+        if (!checkIfMobile()) return;
+        btnPrev.classList.toggle('hidden', grid.scrollLeft <= 4);
+        btnNext.classList.toggle('hidden', grid.scrollLeft >= grid.scrollWidth - grid.clientWidth - 4);
+    }
+
+    function scrollBy(dir) {
+        var amount = grid.clientWidth * 0.6;
+        grid.scrollBy({ left: dir * amount, behavior: 'smooth' });
+        setTimeout(updateArrows, 350);
+    }
+
+    btnPrev.addEventListener('click', function() { scrollBy(-1); });
+    btnNext.addEventListener('click', function() { scrollBy(1); });
+    grid.addEventListener('scroll', updateArrows, { passive: true });
+
+    // Re-check arrows after grid renders
+    var _origRender = renderColorGrid;
+    renderColorGrid = function() {
+        _origRender();
+        setTimeout(function() {
+            grid.scrollLeft = 0;
+            updateArrows();
+        }, 100);
+    };
+})();
 
 // Mobile swipe-to-dismiss
 (function() {
